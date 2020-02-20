@@ -1,9 +1,0 @@
-dataseries:
-  - name: Crop Production FAO
-    category: Agricultural
-    location: ../test-data/SeriesAGCropProductionFAO.csv
-    units: Tonnes
-  - name: Cereals Export
-    category: Agricultural
-    location: ../test-data/SeriesAGCerealsEx.csv
-    units: Millions of Tonnes
