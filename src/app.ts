@@ -1,64 +1,96 @@
-import path from "path";
-import fs from "fs";
+import express from "express";
+import cors from "cors";
+import helmet from "helmet";
+import slugify from "slugify";
 
-import yaml from "js-yaml";
-import csvParser from "csv-parser";
-
-import read_n_lines from "./readNLines";
-import { make_table, make_column_info, load_from_csv } from './loadToDb';
+import httpLogger from "../lib/http-logger";
+import { load_metadata_to_table } from "./metadata";
 
 const CONFIG_FOLDER : string = '../test-config';
-const TEST_PROPERTY : string = 'dataseries';
 
-(async () => {
-  let config_folder : string = path.join(__dirname, CONFIG_FOLDER, 'settings.yml');
+let conf = process.argv[2] || CONFIG_FOLDER;
 
-  try {
-    let settings = yaml.safeLoad(fs.readFileSync(config_folder, 'utf8'));
+const app = express();
+app.use(helmet());
+app.use(httpLogger);
 
-    let dataseries : Series[] = cast_to_dataseries_settings(settings).dataseries;
-    
-    dataseries.forEach(async (current_series : Series) => {
-      let series_file_location = path.join(__dirname, current_series.location);
-      let file_lines = await read_n_lines(series_file_location, 2);
-      console.log(file_lines);
-    });
-
-  } catch (error) {
-    console.error(error);
+(async() => {
+  let applicationConfig = await load_metadata_to_table(conf);
+  
+  if (applicationConfig === null) {
+    throw new Error("Application config was not loaded!");
   }
+
+  let seriesMap : Object = {};
+
+  applicationConfig.series.forEach(s => {
+    if (s.slug === undefined) {
+      s.slug = slugify(s.name, { lower: true });
+    }
+    seriesMap[s.slug] = s;
+  })
+
+  app.get('/keys', cors(), (_, res, __) => {
+    res.json({
+      'keys': applicationConfig.labels.key
+    });
+  });
+
+  app.get('/key/:key/values', cors(), (req, res, __) => {
+    let key = req.params.key.toLowerCase();
+    let matched_values = applicationConfig.domain.find(v => v.key == key).domain_values;
+    if (matched_values === undefined) {
+      res.sendStatus(404);
+      return;
+    }
+    res.json({
+      'values' : matched_values
+    });
+  });
+
+  app.get('/range/values', cors(), (_, res, __) => {
+    res.json({
+      'range' : applicationConfig.labels.range
+    });
+  });
+
+  app.get('/special/values', cors(), (_, res, __) => {
+    res.json({
+      'special' : applicationConfig.labels.special
+    })
+  });
+
+  app.get('/dataseries/values', cors(), (_, res, __) => {
+    res.json({
+      'series' : Object.keys(seriesMap)
+    });
+  });
+
+  app.get('/dataseries/:series', cors() , (req, res, __) => {
+    if (!seriesMap.hasOwnProperty(req.params.series)) {
+      res.sendStatus(404);
+      return;
+    }
+    res.json({ 'message' : 'i woulda sent you something but i dont have that setup yet'});
+  });
+
+  app.use((_, res, __) => {
+    res.sendStatus(404);
+  });
+
+  app.use((err, req, res, next) => {
+    console.error(err);
+    res.sendStatus(500);
+  });
+
+  applicationConfig.series.forEach(series => {
+    console.log(series.name);
+    if (series.slug !== undefined) {
+      console.log("also, slug is " + series.slug);
+    }
+  });
+
+  app.listen(3000, () => console.log('running'));
 })();
 
-class Series {
-  name: string
-  category: string
-  location: string
-  units: string
-  table_name : string | undefined
-  row_count : number | undefined
-  parsed : boolean = false;
-  loaded : boolean = false;
-}
 
-interface DataseriesSettings {
-  dataseries : Series[]
-}
-
-function make_series_name(series) {
-  return `Series_${series.category}_${series.name.split(" ").join("")}`;
-}
-
-function cast_to_dataseries_settings(loadedYaml : any) : DataseriesSettings {
-  if (!loadedYaml.hasOwnProperty(TEST_PROPERTY)) {
-    throw new Error('Dataseries Settings file is improperly formatted');
-  }
-  let series : Series[] = loadedYaml['dataseries'];
-  series.map(s => {
-    s['table_name'] = make_series_name(s);
-    s['row_count'] = 0;
-    return s;
-  });
-  return {
-    dataseries: series
-  };
-}
