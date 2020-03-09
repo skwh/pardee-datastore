@@ -5,6 +5,7 @@ import slugify from "slugify";
 
 import httpLogger from "../lib/http-logger";
 import { load_metadata_to_table } from "./metadata";
+import { Series } from "./models/Series";
 
 const CONFIG_FOLDER : string = '../test-config';
 
@@ -21,13 +22,13 @@ app.use(httpLogger);
     throw new Error("Application config was not loaded!");
   }
 
-  let seriesMap : Object = {};
+  let seriesMap : Map<string, Series> = new Map();
 
   applicationConfig.series.forEach(s => {
     if (s.slug === undefined) {
       s.slug = slugify(s.name, { lower: true });
     }
-    seriesMap[s.slug] = s;
+    seriesMap.set(s.slug, s);
   })
 
   app.get('/keys', cors(), (_, res, __) => {
@@ -62,7 +63,7 @@ app.use(httpLogger);
 
   app.get('/dataseries/values', cors(), (_, res, __) => {
     res.json({
-      'series' : Object.keys(seriesMap)
+      'series' : seriesMap.keys()
     });
   });
 
