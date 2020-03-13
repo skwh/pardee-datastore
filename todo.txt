@@ -1,0 +1,12 @@
+- make other options for the app:
+  - db setup?
+  - cors limitations?
+  - other options?
+- improve settings file (templates)
+- refactor Dataseries.ts
+- move to docker setup?
+  - attach volume with csv files & settings
+=====
+
+- testing
+- 

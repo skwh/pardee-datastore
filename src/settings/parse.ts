@@ -80,7 +80,7 @@ export function make_series_name(series: Series): string {
 }
 
 
-function modify_column_name(name: string): string {
+export function modify_column_name(name: string): string {
   if (/\d{4}/.test(name)) {
     return "Year_" + name;
   }

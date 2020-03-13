@@ -22,7 +22,7 @@ import {
 
 type LabelKeyName = string;
 
-interface ApplicationConfig {
+export interface ApplicationConfig {
   series: Series[]
   labels: LabelList,
   domain: {
