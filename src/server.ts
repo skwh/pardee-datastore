@@ -1,4 +1,3 @@
-
 import { ApplicationConfig } from './metadata';
 import { Series } from "./models/Series";
 import { DataseriesRouter } from './routers/Dataseries';
@@ -8,6 +7,7 @@ export const App = function(express,
                             helmet, 
                             httpLogger, 
                             cors, 
+                            corsOptions,
                             config : ApplicationConfig, 
                             slugify) {
 
@@ -39,7 +39,7 @@ export const App = function(express,
     });
   });
 
-  app.get('/key/:key/values', cors(), (req, res, __) => {
+  app.get('/key/:key/values', cors(corsOptions), (req, res, __) => {
     let key = req.params.key.toLowerCase();
     let matched_values = config.domain.find(v => v.key == key).domain_values;
     if (matched_values === undefined) {
@@ -51,19 +51,19 @@ export const App = function(express,
     });
   });
 
-  app.get('/range/values', cors(), (_, res, __) => {
+  app.get('/range/values', cors(corsOptions), (_, res, __) => {
     res.json({
       'range': config.labels.range
     });
   });
 
-  app.get('/special/values', cors(), (_, res, __) => {
+  app.get('/special/values', cors(corsOptions), (_, res, __) => {
     res.json({
       'special': config.labels.special
     })
   });
 
-  app.use('/dataseries', cors(), DataseriesRouter(seriesMap, cors));
+  app.use('/dataseries', cors(corsOptions), DataseriesRouter(seriesMap, cors, corsOptions));
   
   app.use((_, res, __) => {
     res.sendStatus(404);

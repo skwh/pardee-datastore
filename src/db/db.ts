@@ -17,8 +17,11 @@ export class Query {
 }
 
 const pool = new Pool({
-  user: 'postgres',
-  database: 'postgres'
+  user: process.env.PGUSER,
+  database: process.env.PGDATABASE,
+  password: process.env.PGPASSWORD,
+  host: process.env.PGHOST,
+  port: parseInt(process.env.PGPORT, 10)
 });
 
 export function make_postgres_type(str: string): POSTGRES_TYPE {

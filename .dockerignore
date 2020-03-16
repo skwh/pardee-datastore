@@ -1,0 +1,11 @@
+.vscode
+node_modules
+
+test-config
+test-data
+
+build
+config
+lib
+src
+

@@ -14,14 +14,9 @@ export function range_spread(spread: string): number[] {
 
 export function range_nums(x : number, y: number) : number[] {
   let ret : number[] = [];
-  if (x > y) {
-    for (let i = y; i <= x; i++) {
-      ret.push(i);
-    }
-  } else {
-    for (let i = x; i <= y; i++) {
-      ret.push(i);
-    }
+  let k = x > y ? x : y;
+  for (let i = y; i <= k; i++) {
+    ret.push(i);
   }
   return ret;
 }

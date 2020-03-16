@@ -4,16 +4,16 @@ import generator from "json-2-csv";
 
 import { query, query_to_sql } from "../db/db";
 
-export function DataseriesRouter(seriesMap, cors) {
+export function DataseriesRouter(seriesMap, cors, corsOptions) {
   let dataseries_router = Router();
 
-  dataseries_router.get('/values', cors(), (_, res, __) => {
+  dataseries_router.get('/values', cors(corsOptions), (_, res, __) => {
     res.json({
       'series': Object.keys(seriesMap)
     });
   });
 
-  dataseries_router.get('/:series', cors(), async (req, res, __) => {
+  dataseries_router.get('/:series', cors(corsOptions), async (req, res, __) => {
     let { series } = req.params;
     let download = req.query.download;
     if (!seriesMap.hasOwnProperty(series)) {
@@ -44,7 +44,7 @@ export function DataseriesRouter(seriesMap, cors) {
     })
   });
 
-  dataseries_router.post('/:series/query', cors(), express.json(), async (req, res, __) => {
+  dataseries_router.post('/:series/query', cors(corsOptions), express.json(), async (req, res, __) => {
     let { series } = req.params;
     let download = req.query.download;
     if (!seriesMap.hasOwnProperty(series)) {
