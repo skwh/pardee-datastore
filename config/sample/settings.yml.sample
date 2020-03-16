@@ -1,0 +1,24 @@
+columns:
+  - name: Country
+    type: string
+    label: key
+  - name: 1961..2017
+    type: number
+    label: range
+    modifier: many
+  - name: Earliest
+    type: number
+    label: special
+  - name: MostRecent
+    type: number
+    label: special
+dataseries:
+  - name: Crop Production
+    category: Agricultural
+    location: ${PATH_TO_DATA_FOLDER}/SeriesAGCropProductionFAO.csv
+    units: Tonnes
+  - name: Cereals Export
+    category: Agricultural
+    location: ${PATH_TO_DATA_FOLDER}/SeriesAGCerealsEx.csv
+    units: Millions of Tonnes
+    slug: CerealsEx
