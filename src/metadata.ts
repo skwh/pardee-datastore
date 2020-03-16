@@ -19,7 +19,6 @@ import {
   COLUMN_LABEL_VALUES,
 } from "./settings/parse";
 
-
 type LabelKeyName = string;
 
 export interface ApplicationConfig {
