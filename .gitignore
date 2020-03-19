@@ -1,6 +1,7 @@
 node_modules
 .vscode
 
+config/**/*.yml
 test-config
 test-data
 *.csv

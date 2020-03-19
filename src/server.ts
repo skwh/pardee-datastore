@@ -1,9 +1,11 @@
 import { ApplicationConfig } from './metadata';
 import { Series } from "./models/Series";
 import { DataseriesRouter } from './routers/Dataseries';
+import { Database } from './db/db';
 
 
 export const App = function(express,
+                            d: Database,
                             helmet, 
                             httpLogger, 
                             cors, 
@@ -63,7 +65,7 @@ export const App = function(express,
     })
   });
 
-  app.use('/dataseries', cors(corsOptions), DataseriesRouter(seriesMap, cors, corsOptions));
+  app.use('/dataseries', cors(corsOptions), DataseriesRouter(d, seriesMap, cors, corsOptions));
   
   app.use((_, res, __) => {
     res.sendStatus(404);

@@ -3,10 +3,7 @@ import path from "path";
 import { Series } from "./models/Series";
 
 import { 
-  make_table, 
-  drop_table, 
-  load_from_csv,
-  get_domain_values, 
+  Database
 } from './db/db';
 
 import { 
@@ -46,7 +43,7 @@ function make_config(dataseries: Series[], columns : ColumnInfo[]) : Application
   };
 }
 
-export async function load_metadata_to_table(config_folder_path: string) : Promise<ApplicationConfig> {
+export async function load_metadata_to_table(d: Database, config_folder_path: string) : Promise<ApplicationConfig> {
   let config_folder: string = path.join(__dirname, config_folder_path, 'settings.yml');
 
   try {
@@ -62,9 +59,9 @@ export async function load_metadata_to_table(config_folder_path: string) : Promi
       let series_file_location = path.join(__dirname, current_series.location);
       current_series.table_name =  make_series_name(current_series);
 
-      await drop_table(current_series.table_name);
-      await make_table(current_series.table_name, column_info)
-      await load_from_csv(current_series.table_name, series_file_location);
+      await d.drop_table(current_series.table_name);
+      await d.make_table(current_series.table_name, column_info)
+      await d.load_from_csv(current_series.table_name, series_file_location);
 
       console.log("Loaded series " + current_series.table_name);
 
@@ -72,7 +69,7 @@ export async function load_metadata_to_table(config_folder_path: string) : Promi
       if (i == 0) {
         for (let j = 0; j < config.labels.key.length; j++) {
           let current_key = config.labels.key[j];
-          let domain_values = await get_domain_values(current_series.table_name, current_key);
+          let domain_values = await d.get_domain_values(current_series.table_name, current_key);
           config.domain.push({ key: current_key, domain_values: domain_values });
         }
       }
