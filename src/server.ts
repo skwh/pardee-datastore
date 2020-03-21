@@ -1,3 +1,5 @@
+import express from 'express';
+
 import { ApplicationConfig } from './metadata';
 import { Series } from "./models/Series";
 import { DataseriesRouter } from './routers/Dataseries';
@@ -29,10 +31,9 @@ export interface CorsOptions {
 export type Middleware = (req: any, res: any, next: any) => any;
 
 export interface AppDependencies {
-  express: any
-  helmet: any
-  cors: any
-  slugify: any
+  helmet: () => any
+  cors: (options: CorsOptions) => any
+  slugify: (str : string, options: any) => string
 }
 
 export interface AppOptions {
@@ -44,7 +45,7 @@ export interface AppOptions {
 }
 
 export const App = function(deps: AppDependencies, options: AppOptions) {
-  let { express, helmet, cors, slugify } = deps;
+  let { helmet, cors, slugify } = deps;
 
   let app = express();
   app.use(helmet());

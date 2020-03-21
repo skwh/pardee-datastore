@@ -1,4 +1,3 @@
-import * as express from "express";
 import cors from "cors";
 import helmet from "helmet";
 import slugify from "slugify";
@@ -35,7 +34,6 @@ async function connect_to_database(db: Database) : Promise<boolean> {
 }
 
 const appDependencies : AppDependencies = {
-  express: express,
   helmet: helmet,
   slugify: slugify,
   cors: cors

@@ -46,4 +46,11 @@ export class Database {
     let res = await this.pool.query(QUERY_TEXT);
     return res.rows.map(obj => obj[domain_key]);
   }
+
+  async table_exists(table_name: string) : Promise<boolean> {
+    const QUERY_TEXT = `SELECT to_regclass('${table_name}')`;
+    let res = await this.pool.query(QUERY_TEXT);
+    if (res.rows.length === 0) return false;
+    return true;
+  }
 }

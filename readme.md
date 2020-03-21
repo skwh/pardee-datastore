@@ -1,6 +1,6 @@
 # Pardee DataStore guide
 
-This application is designed to take structured data in the form of csv files, a settings file, and expose the data over an http api.
+This application is designed to take structured data in the form of csv files, a settings file, and expose the data over an http api. The csv files must all have the same columns.
 
 In this document, a "user" is someone who visits the application in its final state. An "administrator" is the person setting up the application.
 
