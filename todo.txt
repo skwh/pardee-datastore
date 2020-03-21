@@ -1,11 +1,8 @@
 - make other options for the app:
-  - db setup?
   - other options?
-- improve settings file (templates)
+- improve settings file (column templates?)
 - refactor Dataseries.ts
-- move to docker setup?
-  - attach volume with csv files & settings
 =====
 
 - testing
-- 
+- restructure
