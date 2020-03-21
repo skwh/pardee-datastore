@@ -29,7 +29,7 @@ The application is designed to be run alongside a Postgres database. Provide the
 
 These environment variables should be specified through a `docker-compose.yml` file or equivalent. For example:
 
-```
+```YAML
 environment:
   - CONFIG_PATH=settings/config
   - SERVE_STATIC=view/dist
@@ -167,7 +167,7 @@ Query endpoints are used to examine the data itself.
 ### The Query Format
 
 When performing a query, a JSON object body must be sent to the query endpoint. This JSON object must have the following format:
-```JSON
+```Javascript
 {
   "domain"?: {
     "key": string,
@@ -222,7 +222,7 @@ And
 ```JSON
 {
   "range": {
-    "from": 12
+    "from": 12,
     "to": 15
   }
 }
