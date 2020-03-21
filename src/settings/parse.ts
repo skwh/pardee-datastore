@@ -43,8 +43,18 @@ export enum POSTGRES_TYPE {
   NUMBER = 'double precision'
 }
 
+export interface ColumnNameMap {
+  original?: string
+  name: string
+}
+
+export function use_column_name(c : ColumnNameMap) : string {
+  if (c.original) return c.original;
+  return c.name;
+}
+
 export type LabelList = {
-  [key in COLUMN_LABEL_VALUES]: string[]
+  [key in COLUMN_LABEL_VALUES]: ColumnNameMap[]
 };
 
 /**
@@ -65,8 +75,8 @@ export interface ColumnSettings {
  * How a column appears to the program after the settings file has been parsed.
  */
 export interface ColumnInfo {
-  name: string,
-  type: POSTGRES_TYPE,
+  nameMap: ColumnNameMap
+  type: POSTGRES_TYPE
   label: COLUMN_LABEL_VALUES
 };
 
@@ -79,10 +89,9 @@ export function make_series_name(series: Series): string {
   return `Series_${series.category}_${series.name.split(" ").join("")}`;
 }
 
-
 export function modify_column_name(name: string): string {
-  if (/\d{4}/.test(name)) {
-    return "Year_" + name;
+  if (/^\d*/.test(name)) {
+    return "n" + name;
   }
   return name;
 }
@@ -115,15 +124,21 @@ export function cast_to_dataseries_settings(loadedYaml: any): Series[] {
 function make_info_from_column(c: ColumnSettings): ColumnInfo[] {
   if (c.hasOwnProperty('modifier') && c.modifier == COLUMN_MODIFIER_VALUES.MANY) {
     return range_spread(c['name']).map(n => {
+      let nstr : string = n.toString();
       return {
-        name: modify_column_name(n.toString()),
+        nameMap: {
+          name: modify_column_name(nstr),
+          original: nstr
+        },
         type: make_postgres_type(c.type),
         label: c.label
       }
     });
   } else {
     return [{
-      name: c.name.toLowerCase(),
+      nameMap: {
+        name: c.name.toLowerCase(),
+      },
       type: make_postgres_type(c.type),
       label: c.label
     }]

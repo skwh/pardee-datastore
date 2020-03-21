@@ -3,13 +3,15 @@ import Router from "express-promise-router";
 import generator from "json-2-csv";
 
 import { Database } from "../db/db";
+import { query_to_sql } from "../db/query";
+import { SeriesMap } from "../server";
 
-export function DataseriesRouter(d: Database, seriesMap, cors, corsOptions) {
+export function DataseriesRouter(d: Database, seriesMap : SeriesMap, cors, corsOptions) {
   let dataseries_router = Router();
 
   dataseries_router.get('/values', cors(corsOptions), (_, res, __) => {
     res.json({
-      'series': Object.keys(seriesMap)
+      'series': Object.values(seriesMap).map(s => s.name)
     });
   });
 
@@ -53,7 +55,7 @@ export function DataseriesRouter(d: Database, seriesMap, cors, corsOptions) {
     }
     let series_table_name = seriesMap[series].table_name;
 
-    const QUERY = d.query_to_sql(series_table_name, req.body);
+    const QUERY = query_to_sql(series_table_name, req.body);
     const { rows } = await d.query(QUERY);
 
     res.format({

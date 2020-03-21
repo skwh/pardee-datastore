@@ -14,6 +14,7 @@ import {
   LabelList,
   ColumnInfo,
   COLUMN_LABEL_VALUES,
+  ColumnNameMap,
 } from "./settings/parse";
 
 type LabelKeyName = string;
@@ -27,8 +28,8 @@ export interface ApplicationConfig {
   }[]
 }
 
-function retrieve_labeled_column_names(c : ColumnInfo[], label: COLUMN_LABEL_VALUES) : string[] {
-  return c.filter(v => v.label == label).map(v => v.name);
+function retrieve_labeled_column_names(c : ColumnInfo[], label: COLUMN_LABEL_VALUES) : ColumnNameMap[] {
+  return c.filter(v => v.label == label).map(v => v.nameMap);
 }
 
 function make_config(dataseries: Series[], columns : ColumnInfo[]) : ApplicationConfig {
@@ -43,7 +44,7 @@ function make_config(dataseries: Series[], columns : ColumnInfo[]) : Application
   };
 }
 
-export async function load_metadata_to_table(d: Database, config_folder_path: string) : Promise<ApplicationConfig> {
+export async function load_metadata_to_table(d: Database, config_folder_path: string, clear_old: boolean) : Promise<ApplicationConfig> {
   let config_folder: string = path.join(__dirname, config_folder_path, 'settings.yml');
 
   try {
@@ -56,10 +57,13 @@ export async function load_metadata_to_table(d: Database, config_folder_path: st
 
     for (let i = 0; i < dataseries.length; i++) {
       let current_series = dataseries[i];
-      let series_file_location = path.join(__dirname, current_series.location);
+      let series_file_location = path.join(__dirname, config_folder_path, current_series.location);
+
       current_series.table_name =  make_series_name(current_series);
 
-      await d.drop_table(current_series.table_name);
+      if (clear_old) {
+        await d.drop_table(current_series.table_name);
+      }
       await d.make_table(current_series.table_name, column_info)
       await d.load_from_csv(current_series.table_name, series_file_location);
 
@@ -68,7 +72,7 @@ export async function load_metadata_to_table(d: Database, config_folder_path: st
       // Only load keys from the first table examined.
       if (i == 0) {
         for (let j = 0; j < config.labels.key.length; j++) {
-          let current_key = config.labels.key[j];
+          let current_key = config.labels.key[j].name;
           let domain_values = await d.get_domain_values(current_series.table_name, current_key);
           config.domain.push({ key: current_key, domain_values: domain_values });
         }
