@@ -1,13 +1,15 @@
-import express from "express";
+import * as express from "express";
 import cors from "cors";
 import helmet from "helmet";
 import slugify from "slugify";
 import path from "path";
 
+import httpLogger from "../lib/http-logger";
+
 import { App, CorsOptions, AppDependencies, AppOptions } from "./server";
 import { Database } from './db/db';
-import httpLogger from "../lib/http-logger";
 import { load_metadata_to_table, ApplicationConfig } from "./metadata";
+
 const CONFIG_FOLDER : string = '../config';
 
 let config_path = process.env.CONFIG_FOLDER || CONFIG_FOLDER;
@@ -39,7 +41,7 @@ const appDependencies : AppDependencies = {
   cors: cors
 }
 
-async function start_app(db: Database) {
+async function start_app(db: Database): Promise<void> {
   try {
     let applicationConfig: ApplicationConfig = await load_metadata_to_table(db, config_path, clear_old);
 
@@ -70,7 +72,7 @@ async function start_app(db: Database) {
   }
 }
 
-function main() {
+function main(): void {
   let db: Database = new Database();
 
   console.log("Server application started. Waiting for database connection.");
