@@ -1,6 +1,6 @@
 {
   "name": "pardee-datastore",
-  "version": "0.0.1",
+  "version": "0.7",
   "description": "Datastore for pardee center data",
   "main": "dist/app.js",
   "scripts": {
