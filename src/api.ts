@@ -28,14 +28,14 @@ export function make_response(category: Response_Category, values): Response {
   let res: Response = {};
   // Typescript function overloading: test type of element in values
   if (typeof values[0] === "string") {
-    res[category] = values.map(v => {
+    res[category] = values.map((v : string) => {
       return {
-        alias: v.name,
-        original: v.name
+        alias: v,
+        original: v
       }
     });
   } else if (typeof values[0] === "object") {
-    res[category] = values.map(v => {
+    res[category] = values.map((v : ColumnNameMap) => {
       if (v.original) {
         return {
           original: v.original,

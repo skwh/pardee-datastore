@@ -5,14 +5,20 @@ import generator from "json-2-csv";
 import { Database } from "../db/db";
 import { query_to_sql } from "../db/query";
 import { SeriesMap } from "../server";
+import { make_response, Response_Category } from "../api";
+import { ColumnNameMap } from "../settings/parse";
+import { Series } from "../models/Series";
 
 export function DataseriesRouter(d: Database, seriesMap : SeriesMap, cors, corsOptions) {
   let dataseries_router = Router();
 
   dataseries_router.get('/values', cors(corsOptions), (_, res, __) => {
-    res.json({
-      'series': Object.values(seriesMap).map(s => s.name)
-    });
+    res.json(make_response(Response_Category.Values, Object.values(seriesMap).map((s : Series) => {
+      return {
+        original: s.name,
+        name: s.slug
+      } as ColumnNameMap;
+    })));
   });
 
   dataseries_router.get('/:series', cors(corsOptions), async (req, res, __) => {
