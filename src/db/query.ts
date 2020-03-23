@@ -24,9 +24,9 @@ export function query_to_sql(table_name: string, q: Query): string {
       }
       if (q.special) r.push(...q.special);
       if (q.range) {
-        if (q.range.values) r.push(...(q.range.values.map(modify_column_name)))
+        if (q.range.values) r.push(...(q.range.values))
         else {
-          r.push(range_spread(q.range.from + '..' + q.range.to).map(m => m.toString()).map(modify_column_name));
+          r.push(range_spread(q.range.from + '..' + q.range.to).map(m => m.toString()));
         }
       }
       return r.join(',');
