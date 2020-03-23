@@ -56,7 +56,7 @@ export const App = function(deps: AppDependencies, options: AppOptions) {
   let seriesMap : SeriesMap = create_series_map(options.config.series, slugify);
 
   if (options.serve_static_path) {
-    console.log("Serving static content from", options.serve_static_path);
+    console.info("Serving static content from", options.serve_static_path);
     app.use('/', express.static(options.serve_static_path));
   }
 

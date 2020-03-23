@@ -62,7 +62,7 @@ async function start_app(db: Database): Promise<void> {
 
     const app = App(appDependencies, appOptions);
 
-    app.listen(8000, () => console.log(' == Server running =='));
+    app.listen(8000, () => console.info(' == Server running =='));
 
   } catch (e) {
     console.error(e);
@@ -73,7 +73,7 @@ async function start_app(db: Database): Promise<void> {
 function main(): void {
   let db: Database = new Database();
 
-  console.log("Server application started. Waiting for database connection.");
+  console.info("Server application started. Waiting for database connection.");
 
   setTimeout(async () => {
     try {

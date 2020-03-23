@@ -61,19 +61,21 @@ export async function load_metadata_to_table(d: Database, config_folder_path: st
 
       current_series.table_name =  make_series_name(current_series);
 
-      let table_currently_exists = await d.table_exists(current_series.table_name);
-
-      // If the table already exists and the user asks for it to be deleted, do that.
-      if (clear_old && table_currently_exists) {
-        await d.drop_table(current_series.table_name);
+      try {
+        // Assume the table does not already exist.
         await d.make_table(current_series.table_name, column_info);
-      } else if (!table_currently_exists) {
-        // Otherwise, if the table doesn't already exist, create it.
-        await d.make_table(current_series.table_name, column_info);
+      } catch (error) {
+        // If it does, only delete and recreate it if the clear_old flag is active.
+        if (clear_old) {
+          await d.drop_table(current_series.table_name);
+          await d.make_table(current_series.table_name, column_info);
+        }
+      } finally {
+        // The table should exist by now, so load the CSV file. 
+        await d.load_from_csv(current_series.table_name, series_file_location);
       }
-      await d.load_from_csv(current_series.table_name, series_file_location);
-
-      console.log("Loaded series " + current_series.table_name);
+      
+      console.info("Loaded series " + current_series.table_name);
 
       // Only load keys from the first table examined.
       if (i == 0) {
