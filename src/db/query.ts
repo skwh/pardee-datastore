@@ -26,7 +26,7 @@ export function query_to_sql(table_name: string, q: Query): string {
       if (q.range) {
         if (q.range.values) r.push(...(q.range.values))
         else {
-          r.push(range_spread(q.range.from + '..' + q.range.to).map(m => m.toString()));
+          r.push(range_spread(q.range.from + '..' + q.range.to).map(m => m.toString()).map(modify_column_name));
         }
       }
       return r.join(',');
@@ -44,5 +44,5 @@ export function query_to_sql(table_name: string, q: Query): string {
     return r.join(' OR ');
   })();
 
-  return `SELECT ${domain_range_plus_special} FROM ${table_name} WHERE ${domain_restriction} ;`;
+  return `SELECT DISTINCT ${domain_range_plus_special} FROM ${table_name} WHERE ${domain_restriction} ;`;
 }

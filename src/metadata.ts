@@ -60,18 +60,22 @@ export async function load_metadata_to_table(d: Database, config_folder_path: st
       let series_file_location = path.join(__dirname, config_folder_path, current_series.location);
 
       current_series.table_name =  make_series_name(current_series);
+      let load_csv = false;
 
       try {
         // Assume the table does not already exist.
         await d.make_table(current_series.table_name, column_info);
+        load_csv = true;
       } catch (error) {
         // If it does, only delete and recreate it if the clear_old flag is active.
         if (clear_old) {
           await d.drop_table(current_series.table_name);
           await d.make_table(current_series.table_name, column_info);
+          load_csv = true;
         }
-      } finally {
-        // The table should exist by now, so load the CSV file. 
+      }
+      // if the table was created, or re-created, re-load the csv.
+      if (load_csv) {
         await d.load_from_csv(current_series.table_name, series_file_location);
       }
       
@@ -82,6 +86,7 @@ export async function load_metadata_to_table(d: Database, config_folder_path: st
         for (let j = 0; j < config.labels.key.length; j++) {
           let current_key = config.labels.key[j].name;
           let domain_values = await d.get_domain_values(current_series.table_name, current_key);
+          console.log("got domain values", domain_values.length);
           config.domain.push({ key: current_key, domain_values: domain_values });
         }
       }
