@@ -15,7 +15,7 @@ The application requires certain files to be in certain places to run:
 When the application is run (which should occur via docker), it must be run with a mounted volume at `/var/www/config` representing this config folder.
 
 The application also has the following environment variables avaliable:
-- `CONFIG_PATH`: optional path to the config folder (default `../config`)
+- `CONFIG_PATH`: optional path to the config folder (default `config`)
 - `SERVE_STATIC`: folder for the server to serve static assets from (none by default)
 - `CORS_ORIGIN`: the CORS trusted origin (`*` by default)
 - `CLEAR_OLD`: should the application attempt to drop old tables in the db associated with the application? usually used for development (`false` by default)

@@ -8,25 +8,31 @@ import { SeriesMap } from "../server";
 import { make_response, Response_Category } from "../api";
 import { ColumnNameMap } from "../settings/parse";
 import { Series } from "../models/Series";
+import { has_prop } from "../utils";
 
-export function DataseriesRouter(d: Database, seriesMap : SeriesMap, cors, corsOptions) {
-  let dataseries_router = Router();
+// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+export function DataseriesRouter(d: Database, seriesMap: SeriesMap, cors, corsOptions) {
+  const dataseries_router = Router();
 
-  let download_key_map : { 
-    [key: string] : {
-      [key: number] : {
-        filename: string
-        download: boolean
-        data: any
-      }
-    }
+  const download_key_map: { 
+    [key: string]: {
+      [key: number]: {
+        filename: string;
+        download: boolean;
+        data: any;
+      };
+    };
   } = {};
 
   Object.keys(seriesMap).forEach(v => download_key_map[v] = {});
 
+  function generate_id(): number {
+    return Math.floor(Math.random() * 10000000);
+  }
+
   function add_key_to_download_map(series: string, data: object, filename: string, download: boolean): number {
     let id = generate_id();
-    while (download_key_map[series].hasOwnProperty(id)) {
+    while (has_prop(download_key_map[series], ""+id)) {
       id = generate_id();
     }
     download_key_map[series][id] = {
@@ -37,35 +43,31 @@ export function DataseriesRouter(d: Database, seriesMap : SeriesMap, cors, corsO
     return id;
   }
 
-  function generate_id() : number {
-    return Math.floor(Math.random() * 10000000);
-  }
-
-  dataseries_router.get('/values', cors(corsOptions), (_, res, __) => {
-    res.json(make_response(Response_Category.Values, Object.values(seriesMap).map((s : Series) => {
+  dataseries_router.get('/values', cors(corsOptions), (_, res) => {
+    res.json(make_response(Response_Category.Values, Object.values(seriesMap).map((s: Series) => {
       return {
         original: s.name,
-        name: s.slug
+        alias: s.slug
       } as ColumnNameMap;
     })));
   });
 
-  dataseries_router.get('/:series', cors(corsOptions), async (req, res, __) => {
-    let { series } = req.params;
-    let { download } = req.query;
-    if (!seriesMap.hasOwnProperty(series)) {
+  dataseries_router.get('/:series', cors(corsOptions), async (req, res) => {
+    const { series } = req.params;
+    const { download } = req.query;
+    if (!has_prop(seriesMap, series)) {
       res.sendStatus(404);
       return;
     }
-    let series_table_name = seriesMap[series].table_name;
+    const series_table_name = seriesMap[series].table_name;
 
     const { rows } = await d.query(`SELECT * FROM ${series_table_name}`);
 
     res.format({
       'text/csv': async () => {
-        let csv = await generator.json2csvAsync(rows);
+        const csv = await generator.json2csvAsync(rows);
         if (download) {
-          let filename = series_table_name + ".csv";
+          const filename = series_table_name + ".csv";
           res.setHeader('Content-Disposition', `attachment; filename="${filename}"`)
         }
         res.send(csv);
@@ -73,7 +75,7 @@ export function DataseriesRouter(d: Database, seriesMap : SeriesMap, cors, corsO
 
       'default': () => {
         if (download) {
-          let filename = series_table_name + ".json";
+          const filename = series_table_name + ".json";
           res.setHeader('Content-Disposition', `attachment; filename="${filename}"`)
         }
         res.json(rows);
@@ -81,29 +83,44 @@ export function DataseriesRouter(d: Database, seriesMap : SeriesMap, cors, corsO
     })
   });
 
-  dataseries_router.get('/:series/query/result', cors(corsOptions), async (req, res, __) => {
-    let { series } = req.params;
-    let { id } = req.query;
-    if (!id || !seriesMap.hasOwnProperty(series) || !download_key_map[series].hasOwnProperty(id)) {
+  dataseries_router.get('/:series/key/:key/values', cors(corsOptions), (req, res) => {
+    const { series, key } = req.params;
+    if (!has_prop(seriesMap, series)) {
       res.sendStatus(404);
       return;
     }
-    let { filename, data, download } = download_key_map[series][id];
+    const seriesObject = seriesMap[series];
+
+    const matched_values = seriesObject.group.domainKeyValues[key];
+    if (matched_values === undefined) {
+      res.sendStatus(404);
+      return;
+    }
+
+    res.json(make_response(Response_Category.Values, matched_values));
+  });
+
+  dataseries_router.get('/:series/query/result', cors(corsOptions), (req, res) => {
+    const { series } = req.params;
+    const { id } = req.query;
+    if (!id || !has_prop(seriesMap, series) || !has_prop(download_key_map[series], id)) {
+      res.sendStatus(404);
+      return;
+    }
+    const { filename, data, download } = download_key_map[series][id];
 
     res.format({
       'text/csv': async () => {
-        let csv = await generator.json2csvAsync(data);
+        const csv = await generator.json2csvAsync(data);
         if (download) {
-          filename += 'csv';
-          res.setHeader('Content-Disposition', `attachment; filename="${filename}"`)
+          res.setHeader('Content-Disposition', `attachment; filename="${filename}.csv"`)
         }
         res.send(csv);
       },
 
       'default': () => {
         if (download) {
-          filename += "json";
-          res.setHeader('Content-Disposition', `attachment; filename="${filename}"`)
+          res.setHeader('Content-Disposition', `attachment; filename="${filename}.json"`)
         }
         res.json(data);
       }
@@ -114,14 +131,14 @@ export function DataseriesRouter(d: Database, seriesMap : SeriesMap, cors, corsO
 
   dataseries_router.options('/:series/query', cors(corsOptions));
   
-  dataseries_router.post('/:series/query', cors(corsOptions), express.json(), async (req, res, __) => {
-    let { series } = req.params;
-    let { download } = req.query;
-    if (!seriesMap.hasOwnProperty(series)) {
+  dataseries_router.post('/:series/query', cors(corsOptions), express.json(), async (req, res) => {
+    const { series } = req.params;
+    const { download } = req.query;
+    if (!has_prop(seriesMap, series)) {
       res.sendStatus(404);
       return;
     }
-    let series_table_name = seriesMap[series].table_name;
+    const series_table_name = seriesMap[series].table_name;
 
     const QUERY = query_to_sql(series_table_name, req.body as Query);
 
@@ -129,14 +146,10 @@ export function DataseriesRouter(d: Database, seriesMap : SeriesMap, cors, corsO
 
     const { rows } = await d.query(QUERY);
 
-    let filename = series_table_name+'.';
-    let id = add_key_to_download_map(series, rows, filename, download);
+    const filename = series_table_name+'.';
+    const id = add_key_to_download_map(series, rows, filename, download);
     
-    let constructed_url = req.baseUrl + req.path + `/result?id=${id}`
-    
-    console.debug("created query entry num", id);
-    console.debug("file name is ", filename);
-    console.debug("rows length is", rows.length);
+    const constructed_url = req.baseUrl + req.path + `/result?id=${id}`
 
     res.send(constructed_url);
   });

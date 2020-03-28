@@ -1,24 +1,23 @@
-import yaml from "js-yaml";
-import fs from "fs";
-
-import { range_spread } from '../utils';
-import { Series } from "../models/Series";
+import { range_spread, has_prop } from '../utils';
+import { Series, Group } from "../models/Series";
 import { SettingsError } from "../models/SettingsError";
 import { make_postgres_type } from "../db/db";
+import { handle_template_generation } from "./template";
 
 /**
  * The different sections that may be present in a settings yml file.
  */
-export enum SETTINGS_SECTIONS_VALUES {
-  DATASERIES = "dataseries",
+export enum Settings_Sections_Values {
+  TEMPLATE = "template",
+  GROUPS = "groups",
   COLUMNS = "columns"
-};
+}
 
 /**
  * MANY : multiple columns are generated based on a numeric spread in the name field.
  *          generally used to fill date ranges for years.
  */
-export enum COLUMN_MODIFIER_VALUES {
+export enum Column_Modifier_Values {
   MANY = "many"
 }
 
@@ -28,34 +27,22 @@ export enum COLUMN_MODIFIER_VALUES {
  * RANGE : this column contains datapoints for every item in the "domain". Generally represents a
  *          certain measurement or slice between data.
  * SPECIAL : this column contains the same type of data as RANGE, but is distinct in some way. 
+ * ANCHOR : this column has the same value for the entire table.
  */
-export enum COLUMN_LABEL_VALUES {
+export enum Column_Label_Values {
   KEY = "key",
   SPECIAL = "special",
-  RANGE = "range"
+  RANGE = "range",
+  ANCHOR = "anchor"
 }
 
 /**
  * Currently, only two datatypes are supported: strings and numbers.
  */
-export enum POSTGRES_TYPE {
+export enum Postgres_Type {
   STRING = 'character varying',
   NUMBER = 'double precision'
 }
-
-export interface ColumnNameMap {
-  original?: string
-  name: string
-}
-
-export function use_column_name(c : ColumnNameMap) : string {
-  if (c.original) return c.original;
-  return c.name;
-}
-
-export type LabelList = {
-  [key in COLUMN_LABEL_VALUES]: ColumnNameMap[]
-};
 
 /**
  * How a column is specified in the settings file.
@@ -65,28 +52,44 @@ export type LabelList = {
  * modifier : modifier for the column (see above).
  */
 export interface ColumnSettings {
-  name: string
-  type: string
-  label: COLUMN_LABEL_VALUES
-  modifier: COLUMN_MODIFIER_VALUES | undefined
+  name: string;
+  type: string;
+  label: Column_Label_Values;
+  modifier: Column_Modifier_Values | undefined;
+}
+
+/**
+ * Because some column names might need to be changed, 
+ * keep the changes recorded in this object.
+ */
+export interface ColumnNameMap {
+  original: string;
+  alias: string;
 }
 
 /**
  * How a column appears to the program after the settings file has been parsed.
  */
 export interface ColumnInfo {
-  nameMap: ColumnNameMap
-  type: POSTGRES_TYPE
-  label: COLUMN_LABEL_VALUES
-};
+  nameMap: ColumnNameMap;
+  type: Postgres_Type;
+  label: Column_Label_Values;
+}
 
+/**
+ * An object which holds the string names of each column which have been assigned
+ * to each avaliable label.
+ */
+export type LabelList = {
+  [key in Column_Label_Values]: ColumnNameMap[]
+}
 
-export function load_yaml(path: string): any {
-  return yaml.safeLoad(fs.readFileSync(path, 'utf8'));
+export function find_object_in_label_list(labelType: Column_Label_Values, list: LabelList, alias: string): ColumnNameMap {
+  return list[labelType].find(o => o.alias === alias);
 }
 
 export function make_series_name(series: Series): string {
-  return `Series_${series.category}_${series.name.split(" ").join("")}`;
+  return `Series_${series.groupName}_${series.name.split(" ").join("")}`;
 }
 
 export function modify_column_name(name: string): string {
@@ -96,52 +99,99 @@ export function modify_column_name(name: string): string {
   return name;
 }
 
+function make_info(settings: ColumnSettings): ColumnInfo {
+  const name = settings.name.toLowerCase();
+  return {
+    nameMap: {
+      original: settings.name,
+      alias: name
+    },
+    type: make_postgres_type(settings.type),
+    label: settings.label
+  } as ColumnInfo;
+}
+
+function make_info_from_spread(settings: ColumnSettings): ColumnInfo[] {
+  return range_spread(settings.name).map(n => {
+    const nstr: string = n.toString();
+    return {
+      nameMap: {
+        alias: modify_column_name(nstr),
+        original: nstr
+      },
+      type: make_postgres_type(settings.type),
+      label: settings.label
+    }
+  });
+}
+
+/**
+ * Given the settings in the yml file, create a ColumnInfo object.
+ * Because this application supports the "spread" modifier, it is possible
+ * that many internal ColumnInfo objects are generated from one 
+ * external ColumnSettings object. So if there is no modifier, this method
+ * returns a singleton array of ColumnInfo objects.
+ * @param c The column settings object from settings.yml
+ */
+function make_info_from_column(c: ColumnSettings): ColumnInfo[] {
+  if (has_prop(c, 'modifier') && c.modifier == Column_Modifier_Values.MANY) {
+    return make_info_from_spread(c);
+  } else {
+    return [make_info(c)];
+  }
+}
+
 export function get_column_info(loadedYaml: any): ColumnInfo[] {
-  if (!loadedYaml.hasOwnProperty(SETTINGS_SECTIONS_VALUES.COLUMNS)) {
+  if (!has_prop(loadedYaml, Settings_Sections_Values.COLUMNS)) {
     throw new SettingsError('Improper formatting: missing "columns" section');
   }
-  let columns = loadedYaml[SETTINGS_SECTIONS_VALUES.COLUMNS];
-  let info: ColumnInfo[] = [];
+  const columns = loadedYaml[Settings_Sections_Values.COLUMNS];
+  const info: ColumnInfo[] = [];
   columns.forEach((c: ColumnSettings) => {
     info.push(...make_info_from_column(c));
   })
   return info;
 }
 
-export function cast_to_dataseries_settings(loadedYaml: any): Series[] {
-  if (!loadedYaml.hasOwnProperty(SETTINGS_SECTIONS_VALUES.DATASERIES)) {
-    throw new SettingsError('Improper formatting: missing "dataseries" section');
+
+/**
+ * Create groups of series given a list of series objects.
+ * @param series 
+ */
+function sort_into_groups(series: Series[]): Group[] {
+  const groups: { [key: string]: Group } = {};
+  for (let i = 0; i < series.length; i++) {
+    const current_series = series[i];
+    if (has_prop(groups, current_series.groupName)) {
+      current_series.group = groups[current_series.groupName];
+      groups[current_series.groupName].addSeries(current_series);
+    } else {
+      const grp = new Group(current_series.groupName, current_series.groupName);
+      groups[current_series.groupName] = grp;
+    }
   }
-  let series: Series[] = loadedYaml[SETTINGS_SECTIONS_VALUES.DATASERIES];
-  series.map(s => {
-    s['table_name'] = make_series_name(s);
-    s['row_count'] = 0;
-    return s;
-  });
-  return series;
+  return Object.values(groups);
 }
 
-function make_info_from_column(c: ColumnSettings): ColumnInfo[] {
-  if (c.hasOwnProperty('modifier') && c.modifier == COLUMN_MODIFIER_VALUES.MANY) {
-    return range_spread(c['name']).map(n => {
-      let nstr : string = n.toString();
-      return {
-        nameMap: {
-          name: modify_column_name(nstr),
-          original: nstr
-        },
-        type: make_postgres_type(c.type),
-        label: c.label
-      }
+function generate_groups_from_settings(yaml: any): Group[] {
+  const groups: Group[] = yaml[Settings_Sections_Values.GROUPS];
+  groups.map(g => {
+    g.series.map(s => {
+      s.table_name = make_series_name(s);
+      s.row_count = 0;
+      return s;
     });
-  } else {
-    return [{
-      nameMap: {
-        name: c.name.toLowerCase(),
-      },
-      type: make_postgres_type(c.type),
-      label: c.label
-    }]
-  }
+    return g;
+  });
+  return groups;
 }
 
+export async function create_group_list(config_absolute_path: string, loadedYaml: any): Promise<Group[]> {
+  if (has_prop(loadedYaml, Settings_Sections_Values.TEMPLATE)) {
+    return sort_into_groups(await handle_template_generation(config_absolute_path, loadedYaml));
+  } else if (has_prop(loadedYaml, Settings_Sections_Values.GROUPS)) {
+    return Promise.resolve(generate_groups_from_settings(loadedYaml));
+  } else {
+    throw new SettingsError(SettingsError.MISSING_DATA_SECTION_ERROR);
+  }
+}
