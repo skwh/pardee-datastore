@@ -3,7 +3,7 @@ import helmet from "helmet";
 import slugify from "slugify";
 import path from "path";
 
-import httpLogger from "../lib/http-logger";
+import httpLogger from "./lib/http-logger";
 
 import { App, CorsOptions, AppDependencies, AppOptions } from "./server";
 import { Database } from './db/db';

@@ -6,25 +6,18 @@
     "moduleResolution": "node",
     "sourceMap": true,
     "outDir": "dist",
+    "rootDir": "src",
+    "composite": true,
+    "allowJs": true,
     "lib": [
       "ES2019"
     ],
-    "baseUrl": "src",
-    "paths": {
-      "@db/*": ["db/*"],
-      "@models/*": ["models/*"],
-      "@routers/*": ["routers/*"],
-      "@settings/*": ["settings/*"],
-      "@/*": ["/*"]
-    }
   },
   "include": [
-    "src/**/*",
-    "test/**/*"
+    "src/**/*"
   ],
   "exclude": [
     "node_modules",
     "dist",
-    "lib"
-  ]
+  ],
 }

@@ -1,10 +1,10 @@
 import express from 'express';
 
 import { ApplicationConfig } from './metadata';
-import { Series } from "@models/Series";
-import { DataseriesRouter } from '@routers/Dataseries';
-import { GroupsRouter } from '@routers/Groups';
-import { Database } from '@db/db';
+import { Series } from "./models/Series";
+import { DataseriesRouter } from './routers/Dataseries';
+import { GroupsRouter } from './routers/Groups';
+import { Database } from './db/db';
 import { make_response, Response_Category } from './api';
 
 export interface SeriesMap {
@@ -56,7 +56,9 @@ export const App = function(deps: AppDependencies, options: AppOptions) {
 
   const cors_with_options = cors(options.corsOptions);
 
-  const seriesMap = create_series_map(options.config.groups.flatMap(g => g.series), slugify);
+  const seriesList = options.config.groups.flatMap(g => g.series);
+
+  const seriesMap = create_series_map(seriesList, slugify);
 
   if (options.serve_static_path) {
     console.info("Serving static content from", options.serve_static_path);

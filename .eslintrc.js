@@ -3,7 +3,7 @@
    parser: '@typescript-eslint/parser',
    parserOptions: {
      tsconfigRootDir: __dirname,
-     project: ['./tsconfig.json'],
+     project: [ './tsconfig.json', './test/tsconfig.json' ],
    },
    plugins: ['@typescript-eslint'],
    extends: [
