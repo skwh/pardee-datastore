@@ -3,20 +3,20 @@ import { modify_column_name } from "../settings/parse";
 
 export class Query {
   domain?: {
-    key: string,
-    values?: string[]
+    key: string;
+    values?: string[];
   }[];
   range?: {
-    from?: string
-    to?: string
-    values?: string[]
+    from?: string;
+    to?: string;
+    values?: string[];
   };
   special?: string[];
 }
 
 export function query_to_sql(table_name: string, q: Query): string {
-  let domain_range_plus_special = (function () {
-    let r = [];
+  const domain_range_plus_special = (function () {
+    const r = [];
     if (!q.domain && !q.special && !q.range) return '*';
     else {
       if (q.domain) {
@@ -33,8 +33,8 @@ export function query_to_sql(table_name: string, q: Query): string {
     }
   })();
 
-  let domain_restriction = (function () {
-    let r = [];
+  const domain_restriction = (function () {
+    const r = [];
     if (!q.domain) return 'true';
     q.domain.forEach(d => {
       d.values.forEach(v => {
