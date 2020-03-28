@@ -25,15 +25,6 @@ export function range_spread(spread: string): number[] {
   return ret;
 } 
 
-export function range_nums(x: number, y: number): number[] {
-  const ret: number[] = [];
-  const k = x > y ? x : y;
-  for (let i = y; i <= k; i++) {
-    ret.push(i);
-  }
-  return ret;
-}
-
 
 export function allOf(predicate: ((x: any) => boolean), xs: any[]): boolean {
   for (let i = 0; i < xs.length; i++) {
@@ -45,7 +36,7 @@ export function allOf(predicate: ((x: any) => boolean), xs: any[]): boolean {
 }
 
 export function argsString(max: number): string {
-  return range_nums(1, max).map(n => '$' + n).join(", ");
+  return range_spread(`1..${max}`).map(n => '$' + n).join(", ");
 }
 
 

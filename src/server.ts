@@ -1,10 +1,10 @@
 import express from 'express';
 
 import { ApplicationConfig } from './metadata';
-import { Series } from "./models/Series";
-import { DataseriesRouter } from './routers/Dataseries';
-import { GroupsRouter } from './routers/Groups';
-import { Database } from './db/db';
+import { Series } from "@models/Series";
+import { DataseriesRouter } from '@routers/Dataseries';
+import { GroupsRouter } from '@routers/Groups';
+import { Database } from '@db/db';
 import { make_response, Response_Category } from './api';
 
 export interface SeriesMap {
@@ -12,6 +12,7 @@ export interface SeriesMap {
 }
 
 function create_series_map(ss: Series[], slugify: (str: string, options: any) => string): SeriesMap {
+  console.log(ss);
   const rtn: SeriesMap = {};
   ss.forEach(s => {
     if (s.slug === undefined) {

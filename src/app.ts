@@ -52,6 +52,8 @@ async function start_app(db: Database): Promise<void> {
 
     if (applicationConfig === null) {
       throw new Error("Application config was not loaded!");
+    } else {
+      console.debug("Application Config Loaded", applicationConfig);
     }
 
     if (no_serve) {
