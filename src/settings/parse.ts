@@ -89,7 +89,7 @@ export function find_object_in_label_list(labelType: Column_Label_Values, list: 
 }
 
 export function make_series_name(series: Series): string {
-  return `Series_${series.groupName}_${series.name.split(" ").join("")}`;
+  return `Series_${series.groupName.split(" ").join("")}_${series.name.split(" ").join("")}`;
 }
 
 export function modify_column_name(name: string): string {

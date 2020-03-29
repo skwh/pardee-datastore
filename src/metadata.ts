@@ -1,6 +1,6 @@
 import path from "path";
 
-import { Series, Group } from "./models/Series";
+import { Group } from "./models/Series";
 import { load_yaml } from './utils';
 
 import { 
@@ -54,6 +54,7 @@ export async function load_metadata_to_table(d: Database, config_folder_path: st
 
       for (let j = 0; j < current_group.series.length; j++) {
         const current_series = current_group.series[i];
+        console.log(current_series.name);
 
         const series_file_location = path.join(__dirname, config_folder_path, current_series.location);
 
@@ -84,16 +85,12 @@ export async function load_metadata_to_table(d: Database, config_folder_path: st
           for (let k = 0; k < config.labels.key.length; k++) {
             const current_key = config.labels.key[j].alias;
             const domain_values = await d.get_domain_values(current_series.table_name, current_key);
-            console.log("got domain values", domain_values.length);
             current_group.domainKeyValues[current_key] = domain_values;
           }
         }
       }
 
       console.log("Loaded group", current_group.name);
-      
-
-      
     }
 
     return config;

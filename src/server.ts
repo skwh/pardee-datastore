@@ -12,7 +12,6 @@ export interface SeriesMap {
 }
 
 function create_series_map(ss: Series[], slugify: (str: string, options: any) => string): SeriesMap {
-  console.log(ss);
   const rtn: SeriesMap = {};
   ss.forEach(s => {
     if (s.slug === undefined) {
@@ -57,7 +56,6 @@ export const App = function(deps: AppDependencies, options: AppOptions) {
   const cors_with_options = cors(options.corsOptions);
 
   const seriesList = options.config.groups.flatMap(g => g.series);
-
   const seriesMap = create_series_map(seriesList, slugify);
 
   if (options.serve_static_path) {

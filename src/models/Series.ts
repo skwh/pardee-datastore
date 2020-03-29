@@ -12,6 +12,12 @@ export class Series {
   slug?: string
   table_name?: string
   row_count?: number
+
+  constructor() {
+    this.name = "";
+    this.category = "";
+    this.location = "";
+  }
 }
 
 // A series template, where some names are changed and all types are string
@@ -35,6 +41,7 @@ export class Group {
     this.series = [];
     this.name = name;
     this.anchorVal = anchorVal;
+    this.domainKeyValues = {};
   }
 
   addSeries(series: Series): number {

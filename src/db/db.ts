@@ -37,7 +37,8 @@ export class Database {
   }
 
   async load_from_csv(table_name: string, file_path: string): Promise<QueryResult> {
-    const QUERY_TEXT = `\\COPY ${table_name} FROM '${file_path}' DELIMITER ',' CSV HEADER;`
+    // eslint-disable-next-line no-useless-escape
+    const QUERY_TEXT = `\COPY ${table_name} FROM '${file_path}' DELIMITER ',' CSV HEADER;`
     return this.pool.query(QUERY_TEXT);
   }
 

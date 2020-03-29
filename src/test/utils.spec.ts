@@ -15,7 +15,7 @@ describe('Utility functions', () => {
       const expected_value = true;
       const actual_value = anyOf(predicate, xs);
 
-      assert.deepEqual(expected_value, actual_value);
+      assert.deepEqual(actual_value, expected_value);
     });
 
     it('should not return true if no items pass the predicate', () => {
@@ -25,7 +25,7 @@ describe('Utility functions', () => {
       const expected_value = false;
       const actual_value = anyOf(predicate, xs);
 
-      assert.deepEqual(expected_value, actual_value);
+      assert.deepEqual(actual_value, expected_value);
     });
   });
 
@@ -36,7 +36,7 @@ describe('Utility functions', () => {
       const expected_value = [ 1, 2, 3 ];
       const actual_value = range_spread(spread);
 
-      assert.deepEqual(expected_value, actual_value);
+      assert.deepEqual(actual_value, expected_value);
     });
 
     it('should throw an error if the spread is improperly formatted', () => {
@@ -51,7 +51,7 @@ describe('Utility functions', () => {
       const expected_value = [];
       const actual_value = range_spread(bad_spread);
 
-      assert.deepEqual(expected_value, actual_value);
+      assert.deepEqual(actual_value, expected_value);
     });
   });
 })

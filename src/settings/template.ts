@@ -1,6 +1,6 @@
 import path from "path";
 
-import { Series, Group } from "../models/Series";
+import { Series, TemplateSeries } from "../models/Series";
 import { allOf, load_csv, has_prop } from "../utils";
 import { Settings_Sections_Values } from "./parse";
 import { SettingsError } from "../models/SettingsError";
@@ -16,7 +16,7 @@ import { SettingsError } from "../models/SettingsError";
 interface TemplateFormat {
   path: string;
   columns: string[];
-  dataseries: Series;
+  dataseries: TemplateSeries;
 }
 
 const TEMPLATE_FORMAT_REQUIRED_FIELDS: string[] = [
@@ -32,24 +32,36 @@ const TEMPLATE_FORMAT_REQUIRED_FIELDS: string[] = [
  * @returns A string with any replacements made.
  */
 export function handlebars_replace(vars: { [key: string]: string }, template: string): string {
-  const handlebar_regex = /{w+}/gi;
-  const matches = handlebar_regex.exec(template);
-
+  const handlebar_regex = /({\w+})/gi;
+  const matches = template.match(handlebar_regex);
   if (matches === null) {
     return template;
   }
   let final = template;
 
-  for (let i = 1; i < matches.length; i++) {
+  for (let i = 0; i < matches.length; i++) {
     const matched_string = matches[i];
-    if (has_prop(vars,matched_string)) {
-      final = final.replace(matched_string, vars[matched_string]);
+    const stripped_string = matched_string.slice(1, matched_string.length - 1);
+    if (has_prop(vars, stripped_string)) {
+      final = final.replace(matched_string, vars[stripped_string]);
     } else {
       throw new SettingsError(`Encountered unknown variable "${matched_string}" when parsing dataseries template.`);
     }
   }
 
   return final;
+}
+
+export function handlebars_replace_object(vars: { [key: string]: string }, template: Record<string, any>): Record<string, any> {
+  const final_value = Object.assign({}, template);
+  for (const [key, value] of Object.entries(template)) {
+    if (typeof value === "string") {
+      final_value[key] = handlebars_replace(vars, value);
+    } else if (typeof value === "object") {
+      final_value[key] = handlebars_replace_object(vars, value);
+    }
+  }
+  return final_value;
 }
 
 /**
@@ -80,6 +92,10 @@ async function generate_series_from_template(config_absolute_path: string, templ
   const series: Series[] = [];
   const keys = {};
 
+  if (Array.isArray(template_series)) {
+    throw new SettingsError("Template dataseries should be given as an object, not an array.");
+  }
+
   template.columns.forEach(k => keys[k] = "");
 
   for (let i = 0; i < template_data.length; i++) {
@@ -88,18 +104,14 @@ async function generate_series_from_template(config_absolute_path: string, templ
     Object.keys(current_row).forEach(k => {
       row_keys_values[k] = current_row[k];
     });
-    const new_series = new Series();
-    for (const [key, value] of Object.entries(template_series)) {
-      new_series[key] = handlebars_replace(row_keys_values, value);
-    }
-    console.log(new_series);
+    let new_series = Object.assign({}, template_series) as unknown as Series;
+    new_series = handlebars_replace_object(row_keys_values, new_series) as Series;
     series.push(new_series);
   }
-
   return series;
 }
 
-export async function handle_template_generation(config_absolute_path: string, yaml: any): Promise<Series[]> {
+export async function handle_template_generation(config_absolute_path: string, yaml: unknown): Promise<Series[]> {
   const template: TemplateFormat = yaml[Settings_Sections_Values.TEMPLATE];
   if (!verify_template_format(template)) {
     throw new SettingsError(SettingsError.MALFORMED_TEMPLATE_ERROR);
