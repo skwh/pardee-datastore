@@ -1,3 +1,5 @@
+import { ColumnNameMap } from "../settings/parse"
+
 export class Series {
   name: string
   category: string
@@ -35,7 +37,7 @@ export class Group {
   name: string
   series: Series[]
   anchorVal: string | number
-  domainKeyValues?: { [key: string]: string[] }
+  domainKeyValues?: { [key: string]: ColumnNameMap[] }
 
   constructor(name: string, anchorVal: string | number) {
     this.series = [];

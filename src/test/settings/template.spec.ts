@@ -4,7 +4,7 @@ import "mocha";
 import {
   handlebars_replace,
   handlebars_replace_object
-} from '../../src/settings/template';
+} from '../../settings/template';
 
 describe('handlebars_replace', () => {
   it('should replace at least one handlebar value in a string', () => {

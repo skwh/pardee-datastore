@@ -1,6 +1,8 @@
 import path from "path";
+import fs from "fs";
 
 import { Group } from "./models/Series";
+import { ApplicationConfig } from './models/ApplicationData';
 import { load_yaml } from './utils';
 
 import { 
@@ -14,13 +16,9 @@ import {
   ColumnInfo,
   Column_Label_Values,
   ColumnNameMap,
-  LabelList,
+  column_values_to_name_maps,
 } from "./settings/parse";
-
-export interface ApplicationConfig {
-  groups: Group[];
-  labels: LabelList;
-}
+import { SettingsError } from "./models/SettingsError";
 
 function retrieve_labeled_column_names(c: ColumnInfo[], label: Column_Label_Values): ColumnNameMap[] {
   return c.filter(v => v.label == label).map(v => v.nameMap);
@@ -38,7 +36,7 @@ function make_config(groups: Group[], columns: ColumnInfo[]): ApplicationConfig 
   };
 }
 
-export async function load_metadata_to_table(d: Database, config_folder_path: string, clear_old: boolean): Promise<ApplicationConfig> {
+export async function load_metadata_to_table(d: Database, config_folder_path: string, clear_old: boolean, strict: boolean): Promise<ApplicationConfig> {
   const settings_path: string = path.join(config_folder_path, 'settings.yml');
 
   try {
@@ -53,10 +51,19 @@ export async function load_metadata_to_table(d: Database, config_folder_path: st
       const current_group = groups[i];
 
       for (let j = 0; j < current_group.series.length; j++) {
-        const current_series = current_group.series[i];
-        console.log(current_series.name);
+        const current_series = current_group.series[j];
+  
+        const series_file_location = path.join(config_folder_path, current_series.location);
+        const series_file_exists = fs.existsSync(series_file_location);
 
-        const series_file_location = path.join(__dirname, config_folder_path, current_series.location);
+        if (!series_file_exists) {
+          if (strict) {
+            throw SettingsError.FILE_NOT_FOUND_ERROR(series_file_location);
+          } else {
+            console.warn(`File for series ${current_series.name} at ${series_file_location} does not exist! Skipping...`);
+            continue;
+          }
+        }
 
         current_series.table_name = make_series_name(current_series);
         let load_csv = false;
@@ -83,14 +90,14 @@ export async function load_metadata_to_table(d: Database, config_folder_path: st
         // Only load domain keys from the first table examined in the group.
         if (j == 0) {
           for (let k = 0; k < config.labels.key.length; k++) {
-            const current_key = config.labels.key[j].alias;
+            const current_key = config.labels.key[k].alias;
             const domain_values = await d.get_domain_values(current_series.table_name, current_key);
-            current_group.domainKeyValues[current_key] = domain_values;
+            current_group.domainKeyValues[current_key] = column_values_to_name_maps(domain_values);
           }
         }
       }
 
-      console.log("Loaded group", current_group.name);
+      console.info("Loaded group", current_group.name);
     }
 
     return config;

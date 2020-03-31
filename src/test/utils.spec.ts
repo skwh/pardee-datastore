@@ -4,7 +4,7 @@ import 'mocha';
 import {
   anyOf,
   range_spread
-} from '../src/utils';
+} from '../utils';
 
 describe('Utility functions', () => {
   describe('anyOf', () => {

@@ -93,7 +93,7 @@ export function make_series_name(series: Series): string {
 }
 
 export function modify_column_name(name: string): string {
-  if (/^\d*/.test(name)) {
+  if (/^\d+/.test(name)) {
     return "n" + name;
   }
   return name;
@@ -194,4 +194,13 @@ export async function create_group_list(config_absolute_path: string, loadedYaml
   } else {
     throw new SettingsError(SettingsError.MISSING_DATA_SECTION_ERROR);
   }
+}
+
+export function column_values_to_name_maps(vs: string[]): ColumnNameMap[] {
+  return vs.map(v => {
+    return {
+      original: v,
+      alias: modify_column_name(v.split(" ").join(""))
+    }
+  });
 }

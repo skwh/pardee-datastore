@@ -1,13 +1,15 @@
-import cors from "cors";
+import cors, { CorsOptions } from "cors";
 import helmet from "helmet";
 import slugify from "slugify";
 import path from "path";
 
 import httpLogger from "./lib/http-logger";
 
-import { App, CorsOptions, AppDependencies, AppOptions } from "./server";
+
 import { Database } from './db/db';
-import { load_metadata_to_table, ApplicationConfig } from "./metadata";
+import { load_metadata_to_table } from "./metadata";
+import { AppDependencies, ApplicationConfig, AppOptions } from "./models/ApplicationData";
+import { App } from "./server";
 
 const CONFIG_FOLDER = 'config';
 
@@ -16,6 +18,7 @@ const serve_static = process.env.SERVE_STATIC;
 const cors_origin = process.env.CORS_ORIGIN || '*';
 const clear_old = process.env.CLEAR_OLD ? true : false;
 const no_serve = process.env.NO_SERVE ? true : false;
+const strict = process.env.STRICT_LOAD ? true : false;
 
 const corsOptions: CorsOptions = {
   "origin": cors_origin,
@@ -48,7 +51,7 @@ async function start_app(db: Database): Promise<void> {
 
   try {
     const final_config_path = path.join(absolute_application_path, config_path);
-    const applicationConfig: ApplicationConfig = await load_metadata_to_table(db, final_config_path, clear_old);
+    const applicationConfig: ApplicationConfig = await load_metadata_to_table(db, final_config_path, clear_old, strict);
 
     if (applicationConfig === null) {
       throw new Error("Application config was not loaded!");

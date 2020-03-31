@@ -41,29 +41,29 @@ describe('make_series_name', () => {
 });
 
 describe('modify_column_name', () => {
-
+  it('should have tests written for it', () => assert.fail());
 });
 
 describe('make_info', () => {
-
+  it('should have tests written for it', () => assert.fail());
 });
 
 describe('make_info_from_spread', () => {
-
+  it('should have tests written for it', () => assert.fail());
 });
 
 describe('make_info_from_column', () => {
-
+  it('should have tests written for it', () => assert.fail());
 });
 
 describe('sort_into_groups', () => {
-
+  it('should have tests written for it', () => assert.fail());
 });
 
 describe('generate_groups_from_settings', () => {
-
+  it('should have tests written for it', () => assert.fail());
 });
 
 describe('create_group_list', () => {
-
+  it('should have tests written for it', () => assert.fail());
 });

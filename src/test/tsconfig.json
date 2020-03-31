@@ -6,7 +6,6 @@
     "moduleResolution": "node",
     "sourceMap": true,
     "outDir": "dist",
-    "rootDir": "src",
     "composite": true,
     "allowJs": true,
     "lib": [
@@ -14,10 +13,9 @@
     ],
   },
   "include": [
-    "src/**/*"
+    "*"
   ],
-  "exclude": [
-    "node_modules",
-    "dist"
+  "references": [
+    { "path": "../../", "prepend" : true }
   ]
 }

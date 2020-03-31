@@ -9,7 +9,7 @@
     "compile": "tsc -b",
     "serve": "node dist/app.js",
     "start": "npm run build && npm run serve",
-    "test": "ts-mocha test/*.spec.ts test/**/*.spec.ts",
+    "test": "ts-mocha src/test/*.spec.ts src/test/**/*.spec.ts",
     "lint": "eslint src --ext .ts --fix --quiet"
   },
   "author": "Evan Derby <somekidwithhtml@gmail.com>",
