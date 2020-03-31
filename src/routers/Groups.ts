@@ -22,7 +22,7 @@ export function GroupsRouter(dependencies: AppDependencies, options: AppOptions)
       [key: number]: {
         filename: string;
         download: boolean;
-        data: any;
+        data: unknown;
       };
     };
   } = {};
@@ -133,6 +133,17 @@ export function GroupsRouter(dependencies: AppDependencies, options: AppOptions)
     })
   });
 
+  groups_router.get('/:group/dataseries/:series/info', cors_with_options, (req, res) => {
+    res.json({
+      name: req.series.name,
+      category: req.series.category,
+      group: req.series.groupName,
+      description: req.series.description,
+      unit: req.series.units,
+      other: req.series.other
+    });
+  })
+
   groups_router.get('/:group/dataseries/:series/query/result', cors_with_options, (req, res) => {
     const { id } = req.query;
     const download_key = make_download_key(req.group, req.series);
@@ -144,7 +155,7 @@ export function GroupsRouter(dependencies: AppDependencies, options: AppOptions)
 
     res.format({
       'text/csv': async () => {
-        const csv = await generator.json2csvAsync(data);
+        const csv = await generator.json2csvAsync(data as object[]);
         if (download) {
           res.setHeader('Content-Disposition', `attachment; filename="${filename}.csv"`)
         }

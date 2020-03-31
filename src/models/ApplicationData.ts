@@ -1,20 +1,24 @@
 import { CorsOptions } from 'cors';
 
 import { Database } from '../db/db';
-import { Group } from './Series';
+import { Group, Category } from './Series';
 import { LabelList } from '../settings/parse';
+import { RequestHandler } from 'express';
 
 export interface ApplicationConfig {
   groups: Group[];
+  categories: Category[];
   labels: LabelList;
 }
 
-export type Middleware = (req: any, res: any, next: any) => any;
+type SlugifyOptions = string | { replacement?: string; remove?: RegExp; lower?: boolean; strict?: boolean };
+
+export type Middleware = RequestHandler;
 
 export interface AppDependencies {
-  helmet: () => any;
-  cors: (options: CorsOptions) => any;
-  slugify: (str: string, options: any) => string;
+  helmet: () => Middleware;
+  cors: (options: CorsOptions) => Middleware;
+  slugify: (str: string, options: SlugifyOptions) => string;
 }
 
 export interface AppOptions {

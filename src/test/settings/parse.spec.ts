@@ -67,3 +67,7 @@ describe('generate_groups_from_settings', () => {
 describe('create_group_list', () => {
   it('should have tests written for it', () => assert.fail());
 });
+
+describe('make_categories_from_groups', () => {
+  it('should have tests written for it', () => assert.fail());
+})

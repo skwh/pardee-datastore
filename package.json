@@ -4,13 +4,14 @@
   "description": "Datastore for pardee center data",
   "main": "dist/app.js",
   "scripts": {
-    "full-build": "./build/build.sh",
-    "build": "npm run lint && npm run compile",
-    "compile": "tsc -b",
+    "build:full": "./build/build.sh",
+    "build": "npm run lint:quiet && npm run compile",
+    "compile": "tsc --build",
     "serve": "node dist/app.js",
     "start": "npm run build && npm run serve",
     "test": "ts-mocha src/test/*.spec.ts src/test/**/*.spec.ts",
-    "lint": "eslint src --ext .ts --fix --quiet"
+    "lint": "eslint src --ext .ts --fix",
+    "lint:quiet": "eslint src --ext .ts --fix --quiet"
   },
   "author": "Evan Derby <somekidwithhtml@gmail.com>",
   "license": "MIT",

@@ -1,5 +1,5 @@
 import { range_spread, has_prop } from '../utils';
-import { Series, Group } from "../models/Series";
+import { Series, Group, Category } from "../models/Series";
 import { SettingsError } from "../models/SettingsError";
 import { make_postgres_type } from "../db/db";
 import { handle_template_generation } from "./template";
@@ -141,7 +141,7 @@ function make_info_from_column(c: ColumnSettings): ColumnInfo[] {
   }
 }
 
-export function get_column_info(loadedYaml: any): ColumnInfo[] {
+export function get_column_info(loadedYaml: unknown): ColumnInfo[] {
   if (!has_prop(loadedYaml, Settings_Sections_Values.COLUMNS)) {
     throw new SettingsError('Improper formatting: missing "columns" section');
   }
@@ -159,7 +159,7 @@ export function get_column_info(loadedYaml: any): ColumnInfo[] {
  * @param series 
  */
 function sort_into_groups(series: Series[]): Group[] {
-  const groups: { [key: string]: Group } = {};
+  const groups: Record<string, Group> = {};
   for (let i = 0; i < series.length; i++) {
     const current_series = series[i];
     if (has_prop(groups, current_series.groupName)) {
@@ -173,7 +173,7 @@ function sort_into_groups(series: Series[]): Group[] {
   return Object.values(groups);
 }
 
-function generate_groups_from_settings(yaml: any): Group[] {
+function generate_groups_from_settings(yaml: unknown): Group[] {
   const groups: Group[] = yaml[Settings_Sections_Values.GROUPS];
   groups.map(g => {
     g.series.map(s => {
@@ -186,7 +186,7 @@ function generate_groups_from_settings(yaml: any): Group[] {
   return groups;
 }
 
-export async function create_group_list(config_absolute_path: string, loadedYaml: any): Promise<Group[]> {
+export async function create_group_list(config_absolute_path: string, loadedYaml: unknown): Promise<Group[]> {
   if (has_prop(loadedYaml, Settings_Sections_Values.TEMPLATE)) {
     return sort_into_groups(await handle_template_generation(config_absolute_path, loadedYaml));
   } else if (has_prop(loadedYaml, Settings_Sections_Values.GROUPS)) {
@@ -203,4 +203,23 @@ export function column_values_to_name_maps(vs: string[]): ColumnNameMap[] {
       alias: modify_column_name(v.split(" ").join(""))
     }
   });
+}
+
+export function make_categories_from_groups(groups: Group[]): Category[] {
+  const categories: Record<string, Category> = {};
+  for (let i = 0; i < groups.length; i++) {
+    const current_group = groups[i];
+    for (let j = 0; j < current_group.series.length; j++) {
+      const current_series = current_group.series[j];
+      const category_name = current_series.category;
+      if (has_prop(categories, category_name)) {
+        categories[category_name].addSeries(current_series);
+      } else {
+        categories[category_name] = new Category(category_name);
+        categories[category_name].addSeries(current_series);
+      }
+    }
+  }
+
+  return Object.values(categories);
 }

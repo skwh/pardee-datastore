@@ -2,7 +2,7 @@ import yaml from "js-yaml";
 import fs from "fs";
 import csv from "csv-parser";
 
-export function anyOf(predicate: ((x: any) => boolean), xs: any[]): boolean {
+export function anyOf<T>(predicate: ((x: T) => boolean), xs: T[]): boolean {
   for (let i = 0; i < xs.length; i++) {
     if (predicate(xs[i])) {
       return true;
@@ -26,7 +26,7 @@ export function range_spread(spread: string): number[] {
 } 
 
 
-export function allOf(predicate: ((x: any) => boolean), xs: any[]): boolean {
+export function allOf<T>(predicate: ((x: T) => boolean), xs: T[]): boolean {
   for (let i = 0; i < xs.length; i++) {
     if (!predicate(xs[i])) {
       return false;
@@ -40,7 +40,7 @@ export function argsString(max: number): string {
 }
 
 
-export async function load_csv(path: string): Promise<any> {
+export async function load_csv(path: string): Promise<unknown> {
   return new Promise((resolve, reject) => {
     const results = [];
 
@@ -52,7 +52,7 @@ export async function load_csv(path: string): Promise<any> {
   });
 }
 
-export function load_yaml(path: string): any {
+export function load_yaml(path: string): unknown {
   return yaml.safeLoad(fs.readFileSync(path, 'utf8'));
 }
 

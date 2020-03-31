@@ -31,7 +31,7 @@ const TEMPLATE_FORMAT_REQUIRED_FIELDS: string[] = [
  * @param template A string which might contain curly brackets (handlebars).
  * @returns A string with any replacements made.
  */
-export function handlebars_replace(vars: { [key: string]: string }, template: string): string {
+export function handlebars_replace(vars: Record<string, string>, template: string): string {
   const handlebar_regex = /({\w+})/gi;
   const matches = template.match(handlebar_regex);
   if (matches === null) {
@@ -52,7 +52,7 @@ export function handlebars_replace(vars: { [key: string]: string }, template: st
   return final;
 }
 
-export function handlebars_replace_object(vars: { [key: string]: string }, template: Record<string, any>): Record<string, any> {
+export function handlebars_replace_object(vars: Record<string, string>, template: Record<string, any>): Record<string, string> {
   const final_value = Object.assign({}, template);
   for (const [key, value] of Object.entries(template)) {
     if (typeof value === "string") {
@@ -68,7 +68,7 @@ export function handlebars_replace_object(vars: { [key: string]: string }, templ
  * Ensure that a yaml object is a valid templatef format object.
  * @param yaml An object read from a yaml file.
  */
-function verify_template_format(yaml: any): boolean {
+function verify_template_format(yaml: unknown): boolean {
   return allOf((prop: string) => has_prop(yaml, prop), TEMPLATE_FORMAT_REQUIRED_FIELDS);
 }
 
@@ -84,7 +84,7 @@ function verify_template_format(yaml: any): boolean {
 
 async function generate_series_from_template(config_absolute_path: string, template: TemplateFormat): Promise<Series[]> {
   // Read the master list file.
-  const template_data = await load_csv(path.join(config_absolute_path, template.path));
+  const template_data = await load_csv(path.join(config_absolute_path, template.path)) as Record<string, string>[];
   // load_csv returns a list of objects with each key of the object 
   //  being a name of a column, and each value being the value of the row at
   //  that column.
@@ -105,7 +105,7 @@ async function generate_series_from_template(config_absolute_path: string, templ
       row_keys_values[k] = current_row[k];
     });
     let new_series = Object.assign({}, template_series) as unknown as Series;
-    new_series = handlebars_replace_object(row_keys_values, new_series) as Series;
+    new_series = handlebars_replace_object(row_keys_values, new_series) as unknown as Series;
     series.push(new_series);
   }
   return series;

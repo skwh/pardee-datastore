@@ -1,8 +1,0 @@
-- make other options for the app:
-  - other options?
-- improve settings file (column templates?)
-- refactor Dataseries.ts
-=====
-
-- testing
-- restructure

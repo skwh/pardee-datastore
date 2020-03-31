@@ -6,7 +6,8 @@ export enum Response_Category {
   Range = "range",
   Special = "special",
   Groups = "groups",
-  Dataseries = "dataseries"
+  Dataseries = "dataseries",
+  Categories = "categories"
 }
 
 export type Response = {

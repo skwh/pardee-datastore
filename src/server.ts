@@ -31,6 +31,25 @@ export const App = function(deps: AppDependencies, options: AppOptions) {
     res.json(make_response(Response_Category.Special, options.config.labels.special));
   });
 
+  app.get('/categories/values', cors_with_options, (_, res) => {
+    res.json(make_response(Response_Category.Categories, options.config.categories.map(c => c.name)))
+  });
+
+  app.param('category', (req, res, next, value) => {
+    const found_category = options.config.categories.find(c => c.name === value);
+    if (found_category === undefined) {
+      res.sendStatus(404);
+      return;
+    } else {
+      req.category = found_category;
+      next();
+    }
+  })
+
+  app.get('/categories/:category/dataseries', cors_with_options, (req, res) => {
+    res.json(make_response(Response_Category.Dataseries, req.category.series.map(s => s.name)));
+  });
+
   app.use('/groups', cors_with_options, GroupsRouter(deps, options));
   
   app.use((_, res) => {

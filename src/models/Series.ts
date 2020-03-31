@@ -1,4 +1,4 @@
-import { ColumnNameMap } from "../settings/parse"
+import { ColumnNameMap, modify_column_name } from "../settings/parse"
 
 export class Series {
   name: string
@@ -8,7 +8,7 @@ export class Series {
   group?: Group
   units?: string
   description?: string
-  other?: any
+  other?: unknown
 
   // generated properties
   slug?: string
@@ -30,14 +30,14 @@ export interface TemplateSeries {
   location: string;
   units?: string;
   description?: string;
-  other?: any;
+  other?: unknown;
 }
 
 export class Group {
   name: string
   series: Series[]
   anchorVal: string | number
-  domainKeyValues?: { [key: string]: ColumnNameMap[] }
+  domainKeyValues?: Record<string, ColumnNameMap[]>
 
   constructor(name: string, anchorVal: string | number) {
     this.series = [];
@@ -51,5 +51,22 @@ export class Group {
     series.groupName = this.name;
     this.series.push(series);
     return this.series.length;
+  }
+}
+
+export class Category {
+  name: ColumnNameMap
+  series: Series[]
+
+  constructor(name: string) {
+    this.name = {
+      original: name,
+      alias: modify_column_name(name.split(" ").join(""))
+    }
+    this.series = [];
+  }
+
+  addSeries(series: Series): number {
+    return this.series.push(series);
   }
 }
