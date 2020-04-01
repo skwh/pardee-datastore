@@ -1,4 +1,4 @@
-import { ColumnNameMap, modify_column_name } from "../settings/parse"
+import { ColumnNameMap, sanitize_name } from "../settings/parse"
 
 export class Series {
   name: string
@@ -61,7 +61,7 @@ export class Category {
   constructor(name: string) {
     this.name = {
       original: name,
-      alias: modify_column_name(name.split(" ").join(""))
+      alias: sanitize_name(name)
     }
     this.series = [];
   }

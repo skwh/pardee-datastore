@@ -88,8 +88,31 @@ export function find_object_in_label_list(labelType: Column_Label_Values, list: 
   return list[labelType].find(o => o.alias === alias);
 }
 
+function remove_spaces(str: string): string {
+  return str.split(" ").join("");
+}
+
+export function replace_symbol_with_phrase(char: string): string {
+  switch (char) {
+    case "%": return "Pcnt";
+    case "-": return "To";
+    case "&": return "And";
+    default: return char;
+  }
+}
+
+export function replace_all_symbols_with_phrases(str: string): string {
+  return str.split('').map(replace_symbol_with_phrase).join('');
+}
+
+export function sanitize_name(str: string): string {
+  return remove_spaces(replace_all_symbols_with_phrases(str));
+}
+
 export function make_series_name(series: Series): string {
-  return `Series_${series.groupName.split(" ").join("")}_${series.name.split(" ").join("")}`;
+  const groupName = sanitize_name(series.groupName);
+  const seriesName = sanitize_name(series.name);
+  return `Series_${groupName}_${seriesName}`;
 }
 
 export function modify_column_name(name: string): string {
@@ -200,7 +223,7 @@ export function column_values_to_name_maps(vs: string[]): ColumnNameMap[] {
   return vs.map(v => {
     return {
       original: v,
-      alias: modify_column_name(v.split(" ").join(""))
+      alias: sanitize_name(v)
     }
   });
 }
