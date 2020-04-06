@@ -1,5 +1,6 @@
 .vscode
 node_modules
+.nyc_output
 
 test-config
 test-data
@@ -7,4 +8,5 @@ test-data
 build
 config
 src
+coverage
 
