@@ -1,12 +1,10 @@
 import { ColumnNameMap, sanitize_name } from "../settings/parse"
 
-export type SeriesDomainType = "monadic" | "dyadic";
-
 export class Series {
   name: string
   category: string
   location: string
-  type?: SeriesDomainType
+  type?: "monadic" | "dyadic"
   groupName?: string
   group?: Group
   units?: string
