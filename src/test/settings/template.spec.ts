@@ -3,7 +3,8 @@ import "mocha";
 
 import {
   handlebars_replace,
-  handlebars_replace_object
+  handlebars_replace_object,
+  verify_template_format
 } from '../../settings/template';
 
 describe('handlebars_replace', () => {
@@ -58,7 +59,7 @@ describe('handlebars_replace_object', () => {
     const vars = {
       'Var1': 'Val1'
     };
-    const template = {
+    const template: any = {
       'prop': '{Var1}',
       'objprop': {
         'prop2': '{Var1}'
@@ -90,4 +91,32 @@ describe('handlebars_replace_object', () => {
     const actual_value = handlebars_replace_object(vars, template);
     assert.deepEqual(actual_value, expected_value);
   })
-})
+});
+
+describe('verify_template_format', () => {
+  it('should verify that an unknown object has all of the given properties', () => {
+    const yaml = {
+      'path': 'somevalue',
+      'columns': 'somevalue',
+      'dataseries': 'somevalue'
+    };
+    
+    const expected_value = true;
+    const actual_value = verify_template_format(yaml);
+
+    assert.equal(actual_value, expected_value);
+  });
+
+  it('should correcty detect that an unknown object does not have all of the given properies', () => {
+    const yaml = {};
+
+    const expected_value = false;
+    const actual_value = verify_template_format(yaml);
+
+    assert.equal(actual_value, expected_value);
+  });
+});
+
+describe('generate_series_from_template', () => {
+  it('should have tests written for it', () => assert.fail());
+});

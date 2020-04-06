@@ -52,7 +52,7 @@ export function handlebars_replace(vars: Record<string, string>, template: strin
   return final;
 }
 
-export function handlebars_replace_object(vars: Record<string, string>, template: Record<string, any>): Record<string, string> {
+export function handlebars_replace_object(vars: Record<string, string>, template: Record<string, any>): Record<string, any> {
   const final_value = Object.assign({}, template);
   for (const [key, value] of Object.entries(template)) {
     if (typeof value === "string") {
@@ -68,7 +68,7 @@ export function handlebars_replace_object(vars: Record<string, string>, template
  * Ensure that a yaml object is a valid templatef format object.
  * @param yaml An object read from a yaml file.
  */
-function verify_template_format(yaml: unknown): boolean {
+export function verify_template_format(yaml: unknown): boolean {
   return allOf((prop: string) => has_prop(yaml, prop), TEMPLATE_FORMAT_REQUIRED_FIELDS);
 }
 
@@ -82,7 +82,7 @@ function verify_template_format(yaml: unknown): boolean {
  * @param template A template format object, derived from the yaml.
  */
 
-async function generate_series_from_template(config_absolute_path: string, template: TemplateFormat): Promise<Series[]> {
+export async function generate_series_from_template(config_absolute_path: string, template: TemplateFormat): Promise<Series[]> {
   // Read the master list file.
   const template_data = await load_csv(path.join(config_absolute_path, template.path)) as Record<string, string>[];
   // load_csv returns a list of objects with each key of the object 

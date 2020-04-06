@@ -30,16 +30,17 @@ interface LoadDeps {
   configPath: string;
 }
 
-function retrieve_labeled_column_names(c: ColumnInfo[], label: Column_Label_Values): ColumnNameMap[] {
+export function retrieve_labeled_column_names(c: ColumnInfo[], label: Column_Label_Values): ColumnNameMap[] {
   return c.filter(v => v.label == label).map(v => v.nameMap);
 }
 
-function make_config(groups: Group[], columns: ColumnInfo[]): ApplicationConfig {
+export function make_config(groups: Group[], columns: ColumnInfo[]): ApplicationConfig {
   return {
     groups: groups,
     categories: make_categories_from_groups(groups),
     labels: {
       key: retrieve_labeled_column_names(columns, Column_Label_Values.KEY),
+      cokey: retrieve_labeled_column_names(columns, Column_Label_Values.COKEY),
       special: retrieve_labeled_column_names(columns, Column_Label_Values.SPECIAL),
       range: retrieve_labeled_column_names(columns, Column_Label_Values.RANGE),
       anchor: retrieve_labeled_column_names(columns, Column_Label_Values.ANCHOR),

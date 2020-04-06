@@ -5,11 +5,10 @@ import path from "path";
 
 import httpLogger from "./lib/http-logger";
 
-
 import { Database } from './db/db';
 import { load_metadata_to_table } from "./metadata";
 import { AppDependencies, ApplicationConfig, AppOptions } from "./models/ApplicationData";
-import { App } from "./server";
+import { Server } from "./server";
 
 const CONFIG_FOLDER = 'config';
 
@@ -75,7 +74,7 @@ async function start_app(db: Database): Promise<void> {
       config: applicationConfig
     }
 
-    const app = App(appDependencies, appOptions);
+    const app = Server(appDependencies, appOptions);
 
     app.listen(8000, () => console.info(' == Server running =='));
 

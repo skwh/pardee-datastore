@@ -24,6 +24,7 @@ export enum Column_Modifier_Values {
 /**
  * KEY : this column makes up the "domain" of the dataset. It is a value that a user
  *          would be searching against. It would be a keyed column in a standard RDBMS.
+ * COKEY : in the case of a dyadic dataset, this column makes up the second coordinate of the domain.
  * RANGE : this column contains datapoints for every item in the "domain". Generally represents a
  *          certain measurement or slice between data.
  * SPECIAL : this column contains the same type of data as RANGE, but is distinct in some way. 
@@ -31,6 +32,7 @@ export enum Column_Modifier_Values {
  */
 export enum Column_Label_Values {
   KEY = "key",
+  COKEY = "cokey",
   SPECIAL = "special",
   RANGE = "range",
   ANCHOR = "anchor"
@@ -55,7 +57,7 @@ export interface ColumnSettings {
   name: string;
   type: string;
   label: Column_Label_Values;
-  modifier: Column_Modifier_Values | undefined;
+  modifier?: Column_Modifier_Values;
 }
 
 /**
@@ -122,7 +124,7 @@ export function modify_column_name(name: string): string {
   return name;
 }
 
-function make_info(settings: ColumnSettings): ColumnInfo {
+export function make_info(settings: ColumnSettings): ColumnInfo {
   const name = settings.name.toLowerCase();
   return {
     nameMap: {
@@ -134,7 +136,7 @@ function make_info(settings: ColumnSettings): ColumnInfo {
   } as ColumnInfo;
 }
 
-function make_info_from_spread(settings: ColumnSettings): ColumnInfo[] {
+export function make_info_from_spread(settings: ColumnSettings): ColumnInfo[] {
   return range_spread(settings.name).map(n => {
     const nstr: string = n.toString();
     return {
@@ -156,7 +158,7 @@ function make_info_from_spread(settings: ColumnSettings): ColumnInfo[] {
  * returns a singleton array of ColumnInfo objects.
  * @param c The column settings object from settings.yml
  */
-function make_info_from_column(c: ColumnSettings): ColumnInfo[] {
+export function make_info_from_column(c: ColumnSettings): ColumnInfo[] {
   if (has_prop(c, 'modifier') && c.modifier == Column_Modifier_Values.MANY) {
     return make_info_from_spread(c);
   } else {
@@ -181,7 +183,7 @@ export function get_column_info(loadedYaml: unknown): ColumnInfo[] {
  * Create groups of series given a list of series objects.
  * @param series 
  */
-function sort_into_groups(series: Series[]): Group[] {
+export function sort_into_groups(series: Series[]): Group[] {
   const groups: Record<string, Group> = {};
   for (let i = 0; i < series.length; i++) {
     const current_series = series[i];
@@ -196,10 +198,13 @@ function sort_into_groups(series: Series[]): Group[] {
   return Object.values(groups);
 }
 
-function generate_groups_from_settings(yaml: unknown): Group[] {
+export function generate_groups_from_settings(yaml: unknown): Group[] {
   const groups: Group[] = yaml[Settings_Sections_Values.GROUPS];
   groups.map(g => {
     g.series.map(s => {
+      if (!s.type) {
+        s.type = "monadic"
+      }
       s.table_name = make_series_name(s);
       s.row_count = 0;
       return s;
