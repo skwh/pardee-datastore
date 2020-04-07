@@ -2,6 +2,7 @@ import cors, { CorsOptions } from "cors";
 import helmet from "helmet";
 import slugify from "slugify";
 import path from "path";
+import { pool, Pool } from "pg";
 
 import httpLogger from "./lib/http-logger";
 
@@ -85,7 +86,7 @@ async function start_app(db: Database): Promise<void> {
 }
 
 function main(): void {
-  const db: Database = new Database();
+  const db: Database = new Database(new Pool());
 
   console.info("Server application started. Waiting for database connection.");
 

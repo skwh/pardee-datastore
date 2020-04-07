@@ -1,4 +1,4 @@
-import { Pool, QueryResult,  } from "pg";
+import { Pool, QueryResult } from "pg";
 
 import { Postgres_Type, ColumnInfo } from "../settings/parse";
 
@@ -18,8 +18,8 @@ export function make_postgres_type(str: string): Postgres_Type {
 export class Database {
   pool: Pool;
 
-  constructor() {
-    this.pool = new Pool();
+  constructor(pool: Pool) {
+    this.pool = pool;
   }
 
   async query(query_text: string): Promise<QueryResult> {
