@@ -7,7 +7,7 @@ import { AppOptions, AppDependencies } from "../models/ApplicationData";
 import { find_object_in_label_list, Column_Label_Values } from "../settings/parse";
 import { make_response, Response_Category } from "../api";
 import { has_prop } from "../utils";
-import { query_to_sql, Query } from "../db/query";
+import { Query, QueryFactory } from "../db/query";
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export function GroupsRouter(dependencies: AppDependencies, options: AppOptions) {
@@ -179,13 +179,15 @@ export function GroupsRouter(dependencies: AppDependencies, options: AppOptions)
     const { download } = req.query;
     const series_table_name = req.series.table_name;
 
-    const QUERY = query_to_sql(series_table_name, req.body as Query);
+    const query_builder = new QueryFactory(series_table_name, req.series.type, req.body as Query);
+
+    const QUERY = query_builder.query_to_sql();
 
     console.debug("performing query: ", QUERY);
 
     const { rows } = await database.query(QUERY);
 
-    const filename = series_table_name + '.';
+    const filename = series_table_name;
     const id = add_key_to_download_map(req.group, req.series, rows, filename, download);
 
     const constructed_url = req.baseUrl + req.path + `/result?id=${id}`

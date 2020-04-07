@@ -118,11 +118,9 @@ export async function load_metadata_to_table(database: Database, configPath: str
       configPath: configPath
     }
 
-    for (let i = 0; i < groups.length; i++) {
-      const current_group = groups[i];
-
-      await load_series_in_group(current_group, loadDeps, { clear_old: clear_old, strict: strict });
-      console.info("Loaded group", current_group.name);
+    for (const group of groups) {
+      await load_series_in_group(group, loadDeps, { clear_old: clear_old, strict: strict });
+      console.info("Loaded group", group.name);
     }
 
     return config;

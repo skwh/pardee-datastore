@@ -39,8 +39,7 @@ export function handlebars_replace(vars: Record<string, string>, template: strin
   }
   let final = template;
 
-  for (let i = 0; i < matches.length; i++) {
-    const matched_string = matches[i];
+  for (const matched_string of matches) {
     const stripped_string = matched_string.slice(1, matched_string.length - 1);
     if (has_prop(vars, stripped_string)) {
       final = final.replace(matched_string, vars[stripped_string]);
@@ -98,8 +97,7 @@ export async function generate_series_from_template(config_absolute_path: string
 
   template.columns.forEach(k => keys[k] = "");
 
-  for (let i = 0; i < template_data.length; i++) {
-    const current_row = template_data[i];
+  for (const current_row of template_data) {
     const row_keys_values = Object.assign({}, keys);
     Object.keys(current_row).forEach(k => {
       row_keys_values[k] = current_row[k];

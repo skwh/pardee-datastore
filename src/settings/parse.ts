@@ -185,8 +185,7 @@ export function get_column_info(loadedYaml: unknown): ColumnInfo[] {
  */
 export function sort_into_groups(series: Series[]): Group[] {
   const groups: Record<string, Group> = {};
-  for (let i = 0; i < series.length; i++) {
-    const current_series = series[i];
+  for (const current_series of series) {
     if (has_prop(groups, current_series.groupName)) {
       current_series.group = groups[current_series.groupName];
       groups[current_series.groupName].addSeries(current_series);
@@ -235,10 +234,8 @@ export function column_values_to_name_maps(vs: string[]): ColumnNameMap[] {
 
 export function make_categories_from_groups(groups: Group[]): Category[] {
   const categories: Record<string, Category> = {};
-  for (let i = 0; i < groups.length; i++) {
-    const current_group = groups[i];
-    for (let j = 0; j < current_group.series.length; j++) {
-      const current_series = current_group.series[j];
+  for (const current_group of groups) {
+    for (const current_series of current_group.series) {
       const category_name = current_series.category;
       if (has_prop(categories, category_name)) {
         categories[category_name].addSeries(current_series);

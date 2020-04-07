@@ -3,6 +3,7 @@ import express from 'express';
 import { AppDependencies, AppOptions } from './models/ApplicationData';
 import { GroupsRouter } from './routers/Groups';
 import { make_response, Response_Category } from './api';
+import { CategoryRouter } from './routers/Category';
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export const Server = function(deps: AppDependencies, options: AppOptions) {
@@ -31,24 +32,7 @@ export const Server = function(deps: AppDependencies, options: AppOptions) {
     res.json(make_response(Response_Category.Special, options.config.labels.special));
   });
 
-  server.get('/categories/values', cors_with_options, (_, res) => {
-    res.json(make_response(Response_Category.Categories, options.config.categories.map(c => c.name)))
-  });
-
-  server.param('category', (req, res, next, value) => {
-    const found_category = options.config.categories.find(c => c.name === value);
-    if (found_category === undefined) {
-      res.sendStatus(404);
-      return;
-    } else {
-      req.category = found_category;
-      next();
-    }
-  })
-
-  server.get('/categories/:category/dataseries', cors_with_options, (req, res) => {
-    res.json(make_response(Response_Category.Dataseries, req.category.series.map(s => s.name)));
-  });
+  server.use('/categories', cors_with_options, CategoryRouter(deps, options));
 
   server.use('/groups', cors_with_options, GroupsRouter(deps, options));
   
