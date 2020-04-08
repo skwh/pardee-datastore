@@ -138,6 +138,7 @@ export function GroupsRouter(dependencies: AppDependencies, options: AppOptions)
       name: req.series.name,
       category: req.series.category,
       group: req.series.groupName,
+      type: req.series.type,
       description: req.series.description,
       unit: req.series.units,
       other: req.series.other

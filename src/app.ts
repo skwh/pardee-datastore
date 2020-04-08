@@ -2,12 +2,12 @@ import cors, { CorsOptions } from "cors";
 import helmet from "helmet";
 import slugify from "slugify";
 import path from "path";
-import { pool, Pool } from "pg";
+import { Pool } from "pg";
 
 import httpLogger from "./lib/http-logger";
 
 import { Database } from './db/db';
-import { load_metadata_to_table } from "./metadata";
+import { MetadataLoader } from "./metadata";
 import { AppDependencies, ApplicationConfig, AppOptions } from "./models/ApplicationData";
 import { Server } from "./server";
 
@@ -17,6 +17,7 @@ const config_path = process.env.CONFIG_FOLDER || CONFIG_FOLDER;
 const serve_static = process.env.SERVE_STATIC;
 const cors_origin = process.env.CORS_ORIGIN || '*';
 const clear_old = process.env.CLEAR_OLD ? true : false;
+const only_clear = process.env.ONLY_CLEAR ? true : false;
 const no_serve = process.env.NO_SERVE ? true : false;
 const strict = process.env.STRICT_LOAD ? true : false;
 
@@ -51,7 +52,14 @@ async function start_app(db: Database): Promise<void> {
 
   try {
     const final_config_path = path.join(absolute_application_path, config_path);
-    const applicationConfig: ApplicationConfig = await load_metadata_to_table(db, final_config_path, clear_old, strict);
+
+    const metadata_loader = new MetadataLoader(db, final_config_path, {
+      clear_old: clear_old,
+      strict: strict,
+      only_clear: only_clear
+    });
+
+    const applicationConfig: ApplicationConfig = await metadata_loader.load_metadata_to_table();
 
     if (applicationConfig === null) {
       throw new Error("Application config was not loaded!");

@@ -208,6 +208,7 @@ export function generate_groups_from_settings(yaml: unknown): Group[] {
       s.row_count = 0;
       return s;
     });
+    g.domainKeyValues = {};
     return g;
   });
   return groups;

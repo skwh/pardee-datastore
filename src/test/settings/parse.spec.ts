@@ -17,9 +17,11 @@ import {
   make_info_from_column,
   Postgres_Type,
   Column_Modifier_Values,
-  sort_into_groups
+  sort_into_groups,
+  column_values_to_name_maps,
+  make_categories_from_groups
 } from '../../settings/parse';
-import { Series } from '../../models/Series';
+import { Series, Group, Category } from '../../models/Series';
 
 describe('find_object_in_label_list', () => {
   it('should find the correct name map in the label list', () => {
@@ -190,7 +192,53 @@ describe('create_group_list', () => {
 });
 
 describe('make_categories_from_groups', () => {
-  it('should have tests written for it', () => assert.fail());
+  it('should make a list of categories from a list of groups', () => {
+    const groups: Group[] = [
+      new Group("Group1", "Group1"),
+      new Group("Group2", "Group2")
+    ];
+    const one = new Series();
+    one.name = "Series1";
+    one.category = "Category1";
+    groups[0].series.push(one);
+
+    const two = new Series();
+    two.name = "Series2";
+    two.category = "Category 2";
+    groups[1].series.push(two);
+
+    const expected_categories: Category[] = [];
+    const catone = new Category("Category1");
+    catone.addSeries(one);
+
+    const cattwo = new Category("Category 2");
+    cattwo.addSeries(two);
+
+    expected_categories.push(catone, cattwo);
+
+    const actual_value = make_categories_from_groups(groups);
+
+    assert.deepEqual(actual_value, expected_categories);
+  });
+});
+
+describe('column_values_to_name_maps', () => {
+  it('should correctly create a list of column name maps from a list of strings', () => {
+    const strs: string[] = [ 'test', 'test 2' ];
+    const expected_value = [
+      {
+        original: 'test',
+        alias: 'test'
+      },
+      {
+        original: 'test 2',
+        alias: 'test2' 
+      }
+    ];
+    const actual_value = column_values_to_name_maps(strs);
+
+    assert.deepEqual(actual_value, expected_value);
+  });
 });
 
 describe('replace_symbol_with_phrase', () => {

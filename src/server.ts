@@ -24,6 +24,10 @@ export const Server = function(deps: AppDependencies, options: AppOptions) {
     res.json(make_response(Response_Category.Keys, options.config.labels.key));
   });
 
+  server.get('/cokeys', cors_with_options, (_, res) => {
+    res.json(make_response(Response_Category.Cokeys, options.config.labels.cokey));
+  })
+
   server.get('/range/values', cors_with_options, (_, res) => {
     res.json(make_response(Response_Category.Range, options.config.labels.range));
   });

@@ -59,3 +59,8 @@ export function load_yaml(path: string): unknown {
 export function has_prop(obj, prop: string): boolean {
   return Object.prototype.hasOwnProperty.call(obj, prop);
 }
+
+export function remove_duplicates<T>(xs: T[]): T[] {
+  const array_set = new Set(xs);
+  return [...array_set];
+}

@@ -30,8 +30,17 @@ export class Database {
     return info.map(({ nameMap, type }: ColumnInfo) => `${nameMap.alias} ${type}`).join(',\n');
   }
 
+  stringify_column_names(info: ColumnInfo[]): string {
+    return info.map(({ nameMap }: ColumnInfo) => nameMap.alias).join(', ');
+  }
+
   async drop_table(table_name: string): Promise<QueryResult> {
     const QUERY_TEXT = `DROP TABLE ${table_name}`;
+    return this.pool.query(QUERY_TEXT);
+  }
+
+  async drop_index(table_name: string): Promise<QueryResult> {
+    const QUERY_TEXT = `DROP INDEX index_${table_name};`
     return this.pool.query(QUERY_TEXT);
   }
 
@@ -40,7 +49,13 @@ export class Database {
     return this.pool.query(QUERY_TEXT);
   }
 
+  async make_index(table_name: string, columns: ColumnInfo[]): Promise<QueryResult> {
+    const QUERY_TEXT = `CREATE INDEX index_${table_name} ON ${table_name} ( ${this.stringify_column_names(columns)} );`
+    return this.pool.query(QUERY_TEXT);
+  }
+
   async load_from_csv(table_name: string, file_path: string): Promise<QueryResult> {
+    // The copy command in Postgres requires an escape at the beginning.
     // eslint-disable-next-line no-useless-escape
     const QUERY_TEXT = `\COPY ${table_name} FROM '${file_path}' DELIMITER ',' CSV HEADER;`
     return this.pool.query(QUERY_TEXT);
