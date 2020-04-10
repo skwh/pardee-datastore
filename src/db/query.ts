@@ -6,6 +6,16 @@ export interface Query {
     key: string;
     values?: string[];
   }[];
+  dyad?: {
+    p: {
+      key: string;
+      values?: string[];
+    };
+    q: {
+      cokey: string;
+      values?: string[];
+    };
+  };
   range?: {
     from?: string;
     to?: string;
@@ -50,14 +60,18 @@ export class QueryFactory {
   }
 
   static make_select(q: Query): string {
-    if ((!q.domain && !q.special && !q.range) || QueryFactory.empty_values(q)) {
+    if ((!q.domain && !q.special && !q.range && !q.dyad) || QueryFactory.empty_values(q)) {
       return '*';
     } else {
       const r = [];
       if (q.domain) {
         q.domain.forEach(d => r.push(d.key));
       }
-      if (QueryFactory.is_only_domain(q)) {
+      if (q.dyad) {
+        r.push(q.dyad.p.key);
+        r.push(q.dyad.q.cokey);
+      }
+      if (QueryFactory.is_only_domain(q) && !q.dyad) {
         r.push('*');
       } else {
         if (q.special) r.push(...q.special);
@@ -74,17 +88,24 @@ export class QueryFactory {
 
   make_where(q: Query): string {
     const r = [];
-    if (!q.domain || QueryFactory.is_domain_empty(q)) return 'true';
-    q.domain.forEach(d => {
-      d.values.forEach(v => {
-        r.push(`${d.key}='${v}'`);
-      });
-    });
+    const t = [];
 
-    if (this.tableType === "monadic") {
-      return r.join(' OR ');
+    if ((!q.domain || QueryFactory.is_domain_empty(q)) && q.dyad && this.tableType == "dyadic") {
+      q.dyad.p.values.forEach(v => {
+        r.push(`${q.dyad.p.key}='${v}'`);
+      });
+      q.dyad.q.values.forEach(v => {
+        t.push(`${q.dyad.q.cokey}='${v}'`);
+      });
+      return `(${r.join(' OR ')}) AND (${t.join(' OR ')})`;
     } else {
-      return r.join(' AND ');
+      if (!q.domain || QueryFactory.is_domain_empty(q)) return 'true';
+      q.domain.forEach(d => {
+        d.values.forEach(v => {
+          r.push(`${d.key}='${v}'`);
+        });
+      });
+      return r.join(' OR ');
     }
   }
 

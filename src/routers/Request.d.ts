@@ -1,4 +1,5 @@
 import { Group, Series, Category } from '../models/Series';
+import { ColumnNameMap } from '../settings/parse';
 /**
  * Add the group, series, and category property to the Express Request object.
  * This is so that param pre-routing will work correctly: when a param is detected,
@@ -11,5 +12,7 @@ declare module 'express-serve-static-core' {
     group: Group;
     series: Series;
     category: Category;
+    key: ColumnNameMap;
+    cokey: ColumnNameMap;
   }
 }

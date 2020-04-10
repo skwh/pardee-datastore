@@ -86,6 +86,24 @@ describe('make_select', () => {
     assert.equal(actual_value, expected_value);
   });
 
+  it('should include p and q if the query is dyadic', () => {
+    const query = {
+      dyad: {
+        p: {
+          key: "test"
+        },
+        q: {
+          cokey: "test2"
+        }
+      }
+    };
+    
+    const expected_value = "test,test2"
+    const actual_value = QueryFactory.make_select(query);
+
+    assert.equal(actual_value, expected_value);
+  });
+
   it('should return star if all value arrays are empty', () => {
     const query = {
       domain: [
@@ -237,19 +255,19 @@ describe('make_where', () => {
     const dyadic_builder = new QueryFactory('test', 'dyadic', {});
 
     const query = {
-      domain: [
-        {
+      dyad: {
+        p: {
           key: "Key1",
           values: ["Val1"]
         },
-        {
-          key: "Key2",
+        q: {
+          cokey: "Key2",
           values: ["Val2"]
         }
-      ]
+      }
     };
 
-    const expected_value = "Key1='Val1' AND Key2='Val2'";
+    const expected_value = "(Key1='Val1') AND (Key2='Val2')";
     const actual_value = dyadic_builder.make_where(query);
 
     assert.equal(actual_value, expected_value);

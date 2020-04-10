@@ -81,7 +81,29 @@ export function GroupsRouter(dependencies: AppDependencies, options: AppOptions)
       req.series = found_series;
       next();
     }
-  })
+  });
+
+  groups_router.param('key', (req, res, next, value) => {
+    const found_key = find_object_in_label_list(Column_Label_Values.KEY, config.labels, value);
+    if (found_key === undefined) {
+      res.sendStatus(404);
+      return;
+    } else {
+      req.key = found_key;
+      next();
+    }
+  });
+
+  groups_router.param('cokey', (req, res, next, value) => {
+    const found_cokey = find_object_in_label_list(Column_Label_Values.COKEY, config.labels, value);
+    if (found_cokey === undefined) {
+      res.sendStatus(404);
+      return;
+    } else {
+      req.cokey = found_cokey;
+      next();
+    }
+  });
 
   groups_router.get('/:group', cors(corsOptions), (req, res) => {
     res.json({
@@ -91,15 +113,12 @@ export function GroupsRouter(dependencies: AppDependencies, options: AppOptions)
   });
 
   groups_router.get('/:group/keys/:key/values', cors_with_options, (req, res) => {
-    const { key } = req.params;
-    const found_column_key = find_object_in_label_list(Column_Label_Values.KEY, config.labels, key);
-    if (found_column_key === undefined) {
-      res.sendStatus(404);
-      return;
-    }
-
-    res.json(make_response(Response_Category.Values, req.group.domainKeyValues[found_column_key.alias]));
+    res.json(make_response(Response_Category.Values, req.group.domainKeyValues[req.key.alias]));
   });
+
+  groups_router.get('/:group/cokeys/:cokey/values', cors_with_options, (req, res) => {
+    res.json(make_response(Response_Category.Cokeys, req.group.domainKeyValues[req.cokey.alias]));
+  })
 
   groups_router.get('/:group/dataseries/values', cors(corsOptions), (req, res) => {
     res.json(make_response(Response_Category.Dataseries, req.group.series.map(s => s.name)));
