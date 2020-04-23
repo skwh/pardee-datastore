@@ -317,4 +317,70 @@ describe('query_to_sql', () => {
 
     assert.equal(actual_value, expected_value);
   });
+
+  it('should handle a dyadic query', () => {
+    const query_builder = new QueryFactory('example_table_name', 'dyadic', {
+      dyad: {
+        p: {
+          key: "Key1",
+          values: ["Val1", "Val2"]
+        },
+        q: {
+          cokey: "Cokey1",
+          values: ["Val3", "Val4"]
+        }
+      },
+      range: {
+        values: ["Range1", "Range2"]
+      }
+    });
+
+    const expected_value = `SELECT DISTINCT Key1,Cokey1,Range1,Range2 FROM example_table_name WHERE (Key1='Val1' OR Key1='Val2') AND (Cokey1='Val3' OR Cokey1='Val4') ;`;
+    const actual_value = query_builder.query_to_sql();
+
+    assert.equal(actual_value, expected_value);
+  });
+
+  it('should handle a dyadic query with one value in the domain missing', () => {
+    const query_builder = new QueryFactory('example_table_name', 'dyadic', {
+      dyad: {
+        p: {
+          key: "Key1"
+        },
+        q: {
+          cokey: "Key2",
+          values: ['Val1']
+        }
+      },
+      range: {
+        values: ['Range1']
+      }
+    });
+    
+    const expected_value = `SELECT DISTINCT Key1,Key2,Range1 FROM example_table_name WHERE (Key1=*) AND (Key2='Val1') ;`;
+    const actual_value = query_builder.query_to_sql();
+
+    assert.equal(actual_value, expected_value);
+  })
+
+  it('should handle a dyadic query with both values in the domain missing', () => {
+    const query_builder = new QueryFactory('example_table_name', 'dyadic', {
+      dyad: {
+        p: {
+          key: "Key1"
+        },
+        q: {
+          cokey: "Key2"
+        }
+      },
+      range: {
+        values: ["Range1"]
+      }
+    });
+
+    const expected_value = `SELECT DISTINCT Key1,Key2,Range1 FROM example_table_name WHERE true ;`;
+    const actual_value = query_builder.query_to_sql();
+
+    assert.equal(actual_value, expected_value);
+  })
 });

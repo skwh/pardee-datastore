@@ -64,7 +64,7 @@ export function handlebars_replace_object(vars: Record<string, string>, template
 }
 
 /**
- * Ensure that a yaml object is a valid templatef format object.
+ * Ensure that a yaml object is a valid template format object.
  * @param yaml An object read from a yaml file.
  */
 export function verify_template_format(yaml: unknown): boolean {

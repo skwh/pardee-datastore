@@ -46,10 +46,12 @@ export const Server = function(deps: AppDependencies, options: AppOptions) {
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   server.use((err, _req, res, _next) => {
+    // If the error involved the JSON parser, return a 400 bad request
     if (err.type === 'entity.parse.failed') {
       res.sendStatus(400);
       return;
     }
+
     console.error(err);
     res.sendStatus(500);
   });

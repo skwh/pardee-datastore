@@ -1,3 +1,5 @@
+import { Maybe, findMaybe } from '../lib/Maybe';
+
 import { range_spread, has_prop } from '../utils';
 import { Series, Group, Category } from "../models/Series";
 import { SettingsError } from "../models/SettingsError";
@@ -86,8 +88,8 @@ export type LabelList = {
   [key in Column_Label_Values]: ColumnNameMap[]
 }
 
-export function find_object_in_label_list(labelType: Column_Label_Values, list: LabelList, alias: string): ColumnNameMap {
-  return list[labelType].find(o => o.alias === alias);
+export function find_object_in_label_list(labelType: Column_Label_Values, list: LabelList, alias: string): Maybe<ColumnNameMap> {
+  return findMaybe(list[labelType], o => o.alias === alias);
 }
 
 function remove_spaces(str: string): string {

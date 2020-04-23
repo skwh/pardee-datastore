@@ -1,6 +1,8 @@
 import path from "path";
 import fs from "fs";
 
+import { Maybe, Just, Nothing } from './lib/Maybe';
+
 import { Group, Series } from "./models/Series";
 import { ApplicationConfig } from './models/ApplicationData';
 import { load_yaml, has_prop } from './utils';
@@ -178,7 +180,7 @@ export class MetadataLoader {
     return true;
   }
 
-  async load_metadata_to_table(): Promise<ApplicationConfig> {
+  async load_metadata_to_table(): Promise<Maybe<ApplicationConfig>> {
     try {
       const settings = load_yaml(this.settingsPath);
 
@@ -192,14 +194,14 @@ export class MetadataLoader {
         console.info("Loaded group", group.name);
       }
       if (this.loadFlags.only_clear) {
-        return null;
+        return Nothing;
       }
 
-      return this.config;
+      return Just(this.config);
 
     } catch (error) {
       console.error(error);
-      return null;
+      return Nothing;
     }
   }
 }

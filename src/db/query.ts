@@ -63,7 +63,7 @@ export class QueryFactory {
     if ((!q.domain && !q.special && !q.range && !q.dyad) || QueryFactory.empty_values(q)) {
       return '*';
     } else {
-      const r = [];
+      const r: string[] = [];
       if (q.domain) {
         q.domain.forEach(d => r.push(d.key));
       }
@@ -78,7 +78,7 @@ export class QueryFactory {
         if (q.range) {
           if (q.range.values) r.push(...(q.range.values))
           else {
-            r.push(range_spread(q.range.from + '..' + q.range.to).map(m => m.toString()).map(modify_column_name));
+            r.push(...range_spread(q.range.from + '..' + q.range.to).map(m => m.toString()).map(modify_column_name));
           }
         }
       }
@@ -87,19 +87,13 @@ export class QueryFactory {
   }
 
   make_where(q: Query): string {
-    const r = [];
-    const t = [];
-
-    if ((!q.domain || QueryFactory.is_domain_empty(q)) && q.dyad && this.tableType == "dyadic") {
-      q.dyad.p.values.forEach(v => {
-        r.push(`${q.dyad.p.key}='${v}'`);
-      });
-      q.dyad.q.values.forEach(v => {
-        t.push(`${q.dyad.q.cokey}='${v}'`);
-      });
-      return `(${r.join(' OR ')}) AND (${t.join(' OR ')})`;
+    if (q.dyad && this.tableType == "dyadic") {
+      return this.make_dyad_where(q);
+    } else if (!q.domain || QueryFactory.is_domain_empty(q)) {
+      return 'true';
     } else {
-      if (!q.domain || QueryFactory.is_domain_empty(q)) return 'true';
+      const r: string[] = [];
+
       q.domain.forEach(d => {
         d.values.forEach(v => {
           r.push(`${d.key}='${v}'`);
@@ -109,7 +103,34 @@ export class QueryFactory {
     }
   }
 
-  query_to_sql(): string {
+  make_dyad_where(q: Query): string {
+    const r: string[] = [];
+    const t: string[] = [];
+
+    if (!q.dyad.p.values && !q.dyad.q.values) {
+      return 'true';
+    }
+
+    if (!q.dyad.p.values || q.dyad.p.values.length === 0) {
+      r.push(`${q.dyad.p.key}=*`)
+    } else {
+      q.dyad.p.values.forEach(v => {
+        r.push(`${q.dyad.p.key}='${v}'`);
+      });
+    }
+
+    if (!q.dyad.q.values || q.dyad.q.values.length === 0) {
+      t.push(`${q.dyad.q.cokey}=*`);
+    } else {
+      q.dyad.q.values.forEach(v => {
+        t.push(`${q.dyad.q.cokey}='${v}'`);
+      });
+    }
+
+    return `(${r.join(' OR ')}) AND (${t.join(' OR ')})`;
+  }
+
+  query_to_sql(): string | undefined {
     const domain_range_plus_special = QueryFactory.make_select(this.query);
     const domain_restriction = this.make_where(this.query);
 

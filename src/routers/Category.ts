@@ -1,4 +1,7 @@
 import Router from "express-promise-router";
+
+import { findMaybe, isNothing } from '../lib/Maybe';
+
 import { AppDependencies, AppOptions } from "../models/ApplicationData";
 import { make_response, Response_Category } from "../api";
 
@@ -15,12 +18,12 @@ export function CategoryRouter(dependencies: AppDependencies, options: AppOption
   });
 
   category_router.param('category', (req, res, next, value) => {
-    const found_category = options.config.categories.find(c => c.name === value);
-    if (found_category === undefined) {
+    const found_category = findMaybe(options.config.categories, c => c.name === value);
+    if (isNothing(found_category)) {
       res.sendStatus(404);
       return;
     } else {
-      req.category = found_category;
+      req.category = found_category.value;
       next();
     }
   })

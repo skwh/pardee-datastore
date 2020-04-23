@@ -42,7 +42,7 @@ export function argsString(max: number): string {
 
 export async function load_csv(path: string): Promise<unknown> {
   return new Promise((resolve, reject) => {
-    const results = [];
+    const results: unknown[] = [];
 
     fs.createReadStream(path)
       .pipe(csv())

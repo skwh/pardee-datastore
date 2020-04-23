@@ -5,10 +5,11 @@ import path from "path";
 import { Pool } from "pg";
 
 import httpLogger from "./lib/http-logger";
+import { isNothing } from './lib/Maybe';
 
 import { Database } from './db/db';
 import { MetadataLoader } from "./metadata";
-import { AppDependencies, ApplicationConfig, AppOptions } from "./models/ApplicationData";
+import { AppDependencies, AppOptions } from "./models/ApplicationData";
 import { Server } from "./server";
 
 const CONFIG_FOLDER = 'config';
@@ -59,18 +60,20 @@ async function start_app(db: Database): Promise<void> {
       only_clear: only_clear
     });
 
-    const applicationConfig: ApplicationConfig = await metadata_loader.load_metadata_to_table();
+    const config  = await metadata_loader.load_metadata_to_table();
 
-    if (applicationConfig === null) {
+    if (isNothing(config)) {
       throw new Error("Application config was not loaded!");
     }
+
+    const applicationConfig = config.value;
 
     if (no_serve) {
       console.debug(applicationConfig);
       return;
     }
 
-    let static_path = undefined;
+    let static_path: string | undefined = undefined;
     if (serve_static) {
       static_path = path.join(__dirname, '..', serve_static);
     }

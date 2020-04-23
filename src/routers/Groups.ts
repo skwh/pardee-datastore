@@ -2,6 +2,8 @@ import Router from "express-promise-router";
 import generator from "json-2-csv";
 import express from "express";
 
+import { Maybe, findMaybe, isNothing } from '../lib/Maybe';
+
 import { Group, Series } from '../models/Series';
 import { AppOptions, AppDependencies } from "../models/ApplicationData";
 import { find_object_in_label_list, Column_Label_Values } from "../settings/parse";
@@ -49,12 +51,12 @@ export function GroupsRouter(dependencies: AppDependencies, options: AppOptions)
     return download_id;
   }
 
-  function find_group(name: string): Group {
-    return config.groups.find(g => g.name == name);
+  function find_group(name: string): Maybe<Group> {
+    return findMaybe(config.groups, (g: Group) => g.name == name);
   }
 
-  function find_series_in_group(group: Group, name: string): Series {
-    return group.series.find(s => s.name == name);
+  function find_series_in_group(group: Group, name: string): Maybe<Series> {
+    return findMaybe(group.series, (s: Series) => s.name == name);
   }
 
   groups_router.get('/values', cors_with_options, (req, res) => {
@@ -63,44 +65,44 @@ export function GroupsRouter(dependencies: AppDependencies, options: AppOptions)
 
   groups_router.param('group', (req, res, next, value) => {
     const found_group = find_group(value);
-    if (found_group === undefined) {
+    if (isNothing(found_group)) {
       res.sendStatus(404);
       return;
     } else {
-      req.group = found_group;
+      req.group = found_group.value;
       next();
     }
   });
 
   groups_router.param('series', (req, res, next, value) => {
     const found_series = find_series_in_group(req.group, value);
-    if (found_series === undefined) {
+    if (isNothing(found_series)) {
       res.sendStatus(404);
       return;
     } else {
-      req.series = found_series;
+      req.series = found_series.value;
       next();
     }
   });
 
   groups_router.param('key', (req, res, next, value) => {
     const found_key = find_object_in_label_list(Column_Label_Values.KEY, config.labels, value);
-    if (found_key === undefined) {
+    if (isNothing(found_key)) {
       res.sendStatus(404);
       return;
     } else {
-      req.key = found_key;
+      req.key = found_key.value;
       next();
     }
   });
 
   groups_router.param('cokey', (req, res, next, value) => {
     const found_cokey = find_object_in_label_list(Column_Label_Values.COKEY, config.labels, value);
-    if (found_cokey === undefined) {
+    if (isNothing(found_cokey)) {
       res.sendStatus(404);
       return;
     } else {
-      req.cokey = found_cokey;
+      req.cokey = found_cokey.value;
       next();
     }
   });
@@ -113,11 +115,21 @@ export function GroupsRouter(dependencies: AppDependencies, options: AppOptions)
   });
 
   groups_router.get('/:group/keys/:key/values', cors_with_options, (req, res) => {
-    res.json(make_response(Response_Category.Values, req.group.domainKeyValues[req.key.alias]));
+    const values = req.group.domainKeyValues[req.key.alias];
+    if (values === undefined) {
+      res.sendStatus(404);
+      return;
+    }
+    res.json(make_response(Response_Category.Values, values));
   });
 
   groups_router.get('/:group/cokeys/:cokey/values', cors_with_options, (req, res) => {
-    res.json(make_response(Response_Category.Cokeys, req.group.domainKeyValues[req.cokey.alias]));
+    const cokeys = req.group.domainKeyValues[req.cokey.alias];
+    if (cokeys === undefined) {
+      res.sendStatus(404);
+      return;
+    }
+    res.json(make_response(Response_Category.Cokeys, cokeys));
   })
 
   groups_router.get('/:group/dataseries/values', cors(corsOptions), (req, res) => {
@@ -202,7 +214,9 @@ export function GroupsRouter(dependencies: AppDependencies, options: AppOptions)
     const query_builder = new QueryFactory(series_table_name, req.series.type, req.body as Query);
 
     const QUERY = query_builder.query_to_sql();
-
+    if (!QUERY) {
+      res.sendStatus(400);
+    }
     console.debug("performing query: ", QUERY);
 
     const { rows } = await database.query(QUERY);

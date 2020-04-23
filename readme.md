@@ -19,6 +19,8 @@ The application also has the following environment variables avaliable:
 - `SERVE_STATIC`: folder for the server to serve static assets from (none by default)
 - `CORS_ORIGIN`: the CORS trusted origin (`*` by default)
 - `CLEAR_OLD`: should the application attempt to drop old tables in the db associated with the application? usually used for development (`false` by default)
+- `ONLY_CLEAR`: with this flag set, the application only attempts to clear existing tables and table indexes, then quits. 
+- `NO_SERVE`: the application loads data to the database, outputs its application config object, and quits, without starting a web server. 
 
 The application is designed to be run alongside a Postgres database. Provide the application the parameters for the database with the following environment variables:
 - `PGUSER`
@@ -42,20 +44,33 @@ environment:
 
 The application takes in data from csv files. In order to make this data useful over an HTTP API, each column must be classified in order to determine how to make a query on the data.
 
+The application supports both monadic and dyadic datasets. Briefly, a monadic dataset is one where a measurement is taken against one unique identifier. For example, in a dataset of people's ages, each age is tied to a unique identifer, namely a person. In the dataset this would be their name.
+
+A dyadic dataset is one where each measurement is taken against two unique identifiers as a pair. In some datasets the order of the pair matters.
+
+In order to support both kinds of datasets, the administrator must classify the different columns for the application. 
+
 Any given table (in a csv file) can have different types of columns:
 1. **Key**: a key column is a column containing values that an end user might want to search against. The value in this column can act as a "primary key" in the sense of databases.
-2. **Range**: a range column is a column containing a value associated with a key measured over a specific range. For timeseries data, different columns corresponding to different points in time would be represented as range columns.
-3. **Special**: a special column is any column which does not fit the definitions of any other type of column, above.
+2. **Cokey**: a cokey column is a column containing the same values as a key column, but is used for dyadic datasets, where a pair of domain values form a unique entry in the data.
+3. **Range**: a range column is a column containing a value associated with a key measured over a specific range. For timeseries data, different columns corresponding to different points in time would be represented as range columns.
+4. **Anchor**: a column which contains the same value for every row in the dataset.
+5. **Special**: a special column is any column which does not fit the definitions of any other type of column, above.
 
 The program then generates endpoints which allow for an end user or another application to determine the shape of the data and query against it. Querying is discussed in more detail below. 
 
 ## Settings.yml
 
-The `settings.yml` file is a way for an administrator to provide details to the application about the data being input. This file is required for proper functioning of the application. The two top-level headings in the settings file are `columns` and `dataseries`. 
+The `settings.yml` file is a way for an administrator to provide details to the application about the data being input. This file is required for proper functioning of the application. There are several different sections which can be used to configure the application and specify what data should be loaded.
 
-### Dataseries Format
+These sections live at the top (the "root") of the YAML file; there should not be any spacing between the name of the section and the beginning of the line. 
 
-The `dataseries` section is a list of objects. Each object corresponds to a single series of data, also called a data set, represented by a single csv file. 
+### Groups Format
+
+The `groups` section is a list of objects.
+Each object corresponds to a group of series of data, each of which is represented in the `dataseries` attribute.
+
+Each `group` should have at least a name and a list of the dataseries which it contains.
 
 Each dataseries object must have the following attributes:
 - `name`: The name of the data series.
@@ -70,12 +85,14 @@ Each dataseries object may have the following attributes:
 
 #### Examples:
 ```YML
-dataseries:
-- name: Church Group Birth Years
-  location: ./data/church_group.csv
-  category: People
-  units: number of people
-  slug: ChurchGroup-BY
+group:
+  name: Church Group
+  dataseries:
+  - name: Church Group Birth Years
+    location: ./data/church_group.csv
+    category: People
+    units: number of people
+    slug: ChurchGroup-BY
 ```
 
 If the example data series above did not have the `slug` attribute, the generated "slug" (machine-friendly label) would be `church-group-birth-years`. 
@@ -83,6 +100,8 @@ If the example data series above did not have the `slug` attribute, the generate
 ### Columns Format
 
 The `columns` section is a list of objects. Each object corresponds to a column in the data file. The object provides a way for the administrator to tell the application how to treat the data.
+
+**This section is required.**
 
 Each column object must have the following attributes:
 - `name`: The name of the column
@@ -125,9 +144,40 @@ A column with the `many` modifier should have its name in the following format: 
 
 The `many` modifier is primarliy used to generate column entires for multiple years. If a column name is only a number (as should be the case in a many modifier), it will be aliased to the string `n{number}`. This is because Postgres does not support columns which start with numeric characters.  
 
+### Template format
+
+If there are many groups and hundreds or thousands of possible data sets, the application can be configured to load the required information for each group and dataset. This is where the `template` section comes in.
+
+A secondary csv file should be created with the relevant information on all of the required datasets, including their groups. 
+
+**This section cannot be used at the same time as the `groups` section. One or the other.**
+
+The `template` section requires a `path` be provided to this secondary csv file. It then needs a list of the column names present in the csv file. The administrator can use these column names like variables, filling in any aspect of a dataset with the value from any given column. The application will then read the secondary file and perform this replacement, registering each dataset as it is created.
+
+The last required aspect of the `template` section is a `dataseries` entry, where each value may use a column name as a variable in "handlebars" syntax. If the name of a column is "Variable", then the handlebars syntax would be "{Variable}". This tells the application what to replace with the corresponding value in the secondary file table.
+
+#### An example:
+
+```YAML
+template:
+  path: ./data/DataInfo.csv 
+  columns:
+    - FirstName
+    - LastName
+    - FileUrl
+    - Group
+  dataseries:
+    name: "{FirstName} {LastName}"
+    groupName: "{Group}"
+    location: "{FileUrl}"
+```
+
+
 ### Full Example
 
 An example `settings.yml` file can be found in the `config/sample` folder of this repository. 
+
+An example which uses the `template` format is avaliable as `settings-template.yml`. 
 
 ## The Generated API Outline
 
@@ -139,9 +189,12 @@ There are two categories of endpoints: endpoints to determine what columns are a
 
 The shape endpoints are as follows:
 - `GET /keys`: Returns all column names labeled "key"
-- `GET /key/:key/values`: Returns all the values in the column labeled `:key` (url parameter variable)
+- `GET /group/:group/key/:key/values`: Returns all the values in the column labeled `:key` (url parameter variable)
 - `GET /range/values`: Returns all the columns labeled "range"
 - `GET /special/values`: Returns all the columns labeled "special"
+- `GET /group/:group/dataseries/:series/info`: Returns metadata about the dataseries, provided by the administrator.
+- `GET /categories/values`: Returns the different categories which data is sorted into (provided by administrator).
+- `GET /categories/:category/dataseries`: Returns the dataseries which belong to a given category.
 
 #### Response
 
@@ -156,13 +209,13 @@ So the response pattern is as follows:
 }[]
 ```
 
-Where `shape_category` is one of `range`, `special`, `key`, or `values`. The "original" represents how the column was named, as specified by the administrator. The "alias" is the machine-readable version of the column name. If the name was not altered, then the two fields are the same.
+Where `shape_category` is one of `range`, `special`, `key`, `cokey`, `anchor`, `datasets`, `groups`, or `values`. The "original" represents how the column was named, as specified by the administrator. The "alias" is the machine-readable version of the column name. If the name was not altered, then the two fields are the same.
 
 ### Query Endpoints
 
 Query endpoints are used to examine the data itself.
-- `GET /dataseries/values`: Returns the names of all avaliable data series, as specified in the `settings.yml` file. 
-- `POST /dataseries/:series/query`: Perform a query against the data series called `:series` (url parameter variable). See the next section for how to perform a query.
+- `GET /groups/:group/dataseries/values`: Returns the names of all avaliable data series, as specified in the `settings.yml` file. 
+- `POST /groups/:group/dataseries/:series/query`: Perform a query against the data series called `:series` (url parameter variable). See the next section for how to perform a query.
 
 ### The Query Format
 
@@ -173,6 +226,16 @@ When performing a query, a JSON object body must be sent to the query endpoint. 
     "key": string,
     "values"?: string[]
   }[],
+  "dyad"?: {
+    "p": {
+      "key": string,
+      "values"?: string[]
+    },
+    "q": {
+      "cokey": string,
+      "values"?: string[]
+    }
+  }
   "range"?: {
     "from"?: string,
     "to"?: string,
@@ -205,6 +268,36 @@ This query would select all rows with the first name "Rebecca" or "George" and w
 ```SQL
 SELECT * FROM table_name WHERE firstname="Rebecca" OR firstname="George";
 ```
+
+#### Dyad
+
+If the dataset being queried against is dyadic, then the `dyad` section of the query should be used, rather than the `domain` section. 
+
+The two parameters in the `dyad` section are `p` and `q`, which refer to the two members of the dyad. The values in these objects should use the `key` or `cokey` entry to refer to a specific column, and then the `values[]` entries to refer to specific values in that column. 
+
+A query using the following JSON query object:
+```JSON
+{
+  "dyad": {
+    "p": {
+      "key": "PersonA",
+      "values": ["Jeremy", "Mike", "Dale"]
+    },
+    "q": {
+      "cokey": "PersonB",
+      "values": ["Roger"]
+    }
+  }
+}
+```
+
+would produce the following query on the dataseries table:
+
+```SQL
+SELECT PersonA, PersonB, ... FROM example_table_name WHERE (PersonA='Jeremy' OR PersonA='Mike' OR PersonA='Dale') AND (PersonB='Roger');
+```
+
+Notice that the `WHERE` clause in this query is different from when using the `domain` section, in order to correctly match against dyadic data. 
 
 #### Range
 

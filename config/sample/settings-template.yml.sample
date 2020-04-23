@@ -1,0 +1,33 @@
+columns:
+  - name: Country
+    type: string
+    label: key
+  - name: 1961..2017
+    type: number
+    label: range
+    modifier: many
+  - name: Earliest
+    type: number
+    label: special
+  - name: MostRecent
+    type: number
+    label: special
+template:
+  path: ./data/MasterData.csv
+  columns:
+    - Country
+    - Group
+    - Variable
+    - Definition
+    - Years
+    - Units
+    - Source
+  dataseries:
+    name: "{Variable}"
+    category: "{Group}"
+    groupName: "{Country}"
+    location: "./data/{Country}/{Country}_{Variable}.csv"
+    description: "{Definition}"
+    unit: "{Units}"
+    other:
+      source: "{Source}"

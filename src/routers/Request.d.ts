@@ -9,10 +9,10 @@ import { ColumnNameMap } from '../settings/parse';
  */
 declare module 'express-serve-static-core' {
   export interface Request {
-    group: Group;
-    series: Series;
-    category: Category;
-    key: ColumnNameMap;
-    cokey: ColumnNameMap;
+    group?: Group;
+    series?: Series;
+    category?: Category;
+    key?: ColumnNameMap;
+    cokey?: ColumnNameMap;
   }
 }
