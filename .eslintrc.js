@@ -13,6 +13,8 @@
      'plugin:@typescript-eslint/recommended-requiring-type-checking',
   ],
   rules: {
-    "@typescript-eslint/camelcase": "off"
+    "@typescript-eslint/camelcase": "off",
+    "quotes": ["error", "single", { "allowTemplateLiterals": true }],
+    "semi": ["error", "always"]
   }
 };

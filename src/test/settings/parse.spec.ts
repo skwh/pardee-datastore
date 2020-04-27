@@ -1,5 +1,5 @@
-import { assert } from "chai";
-import "mocha";
+import { assert } from 'chai';
+import 'mocha';
 
 import { 
   Column_Label_Values, 
@@ -20,8 +20,10 @@ import {
   sort_into_groups,
   column_values_to_name_maps,
   make_categories_from_groups
-} from '../../settings/parse';
-import { Series, Group, Category } from '../../models/Series';
+} from '../../settings/parse.old';
+import { Category } from '../../models/Category.model';
+import { Series } from '../../models/Series.model';
+import { Group } from '../../models/Group.model';
 
 describe('find_object_in_label_list', () => {
   it('should find the correct name map in the label list', () => {
@@ -45,10 +47,10 @@ describe('find_object_in_label_list', () => {
 describe('make_series_name', () => {
   it('should correctly generate a name from a series object', () => {
     const series = new Series();
-    series.groupName = "Test Group Name";
-    series.name = "Test Series Name";
+    series.groupName = 'Test Group Name';
+    series.name = 'Test Series Name';
 
-    const expected_value = "Series_TestGroupName_TestSeriesName";
+    const expected_value = 'Series_TestGroupName_TestSeriesName';
     const actual_value = make_series_name(series);
 
     assert.equal(actual_value, expected_value);
@@ -57,15 +59,15 @@ describe('make_series_name', () => {
 
 describe('modify_column_name', () => {
   it('should prepend a numeric input with "n"', () => {
-    const input = "1200";
+    const input = '1200';
 
-    const expected_value = "n1200";
+    const expected_value = 'n1200';
     const actual_value = modify_column_name(input);
 
     assert.equal(actual_value, expected_value);
   });
   it('should otherwise pass through an input', () => {
-    const input = "test";
+    const input = 'test';
 
     const actual_value = modify_column_name(input);
 
@@ -76,14 +78,14 @@ describe('modify_column_name', () => {
 describe('make_info', () => {
   it('should correctly transform settings into a column info object', () => {
     const settings: ColumnSettings = {
-      name: "Test",
-      type: "string",
+      name: 'Test',
+      type: 'string',
       label: Column_Label_Values.RANGE
     };
     const expected_value: ColumnInfo = {
       nameMap: {
-        original: "Test",
-        alias: "test"
+        original: 'Test',
+        alias: 'test'
       },
       type: Postgres_Type.STRING,
       label: Column_Label_Values.RANGE
@@ -97,32 +99,32 @@ describe('make_info', () => {
 describe('make_info_from_spread', () => {
   it('should make many columns from a settings spread', () => {
     const settings: ColumnSettings = {
-      name: "1..3",
-      type: "number",
+      name: '1..3',
+      type: 'number',
       label: Column_Label_Values.RANGE
     };
 
     const expected_values = [
       {
         nameMap: {
-          alias: "n1",
-          original: "1"
+          alias: 'n1',
+          original: '1'
         },
         type: Postgres_Type.NUMBER,
         label: Column_Label_Values.RANGE
       },
       {
         nameMap: {
-          alias: "n2",
-          original: "2"
+          alias: 'n2',
+          original: '2'
         },
         type: Postgres_Type.NUMBER,
         label: Column_Label_Values.RANGE
       },
       {
         nameMap: {
-          alias: "n3",
-          original: "3"
+          alias: 'n3',
+          original: '3'
         },
         type: Postgres_Type.NUMBER,
         label: Column_Label_Values.RANGE
@@ -138,8 +140,8 @@ describe('make_info_from_spread', () => {
 describe('make_info_from_column', () => {
   it('should call the spread function if the column has a spread modifier', () => {
     const settings: ColumnSettings = {
-      name: "1..2",
-      type: "number",
+      name: '1..2',
+      type: 'number',
       label: Column_Label_Values.RANGE,
       modifier: Column_Modifier_Values.MANY
     };
@@ -149,8 +151,8 @@ describe('make_info_from_column', () => {
   });
   it('should return a singleton if the column does not have a spread modifier', () => {
     const settings: ColumnSettings = {
-      name: "Test",
-      type: "string",
+      name: 'Test',
+      type: 'string',
       label: Column_Label_Values.ANCHOR
     };
 
@@ -163,23 +165,23 @@ describe('sort_into_groups', () => {
   it('should correctly sort a list of series into groups', () => {
     const series: Series[] = [];
     const first = new Series();
-    first.name = "first";
-    first.groupName = "firstGroup";
+    first.name = 'first';
+    first.groupName = 'firstGroup';
     series.push(first);
     const second = new Series();
-    second.name = "second";
-    second.groupName = "secondGroup";
+    second.name = 'second';
+    second.groupName = 'secondGroup';
     series.push(second);
     const third = new Series();
-    third.name = "third";
-    third.groupName = "firstGroup";
+    third.name = 'third';
+    third.groupName = 'firstGroup';
     series.push(third);
 
     const actual_value = sort_into_groups(series);
 
     assert.equal(actual_value.length, 2);
-    assert.equal(actual_value[0].name, "firstGroup");
-    assert.equal(actual_value[1].name, "secondGroup");
+    assert.equal(actual_value[0].name, 'firstGroup');
+    assert.equal(actual_value[1].name, 'secondGroup');
   });
 });
 
@@ -194,24 +196,24 @@ describe('create_group_list', () => {
 describe('make_categories_from_groups', () => {
   it('should make a list of categories from a list of groups', () => {
     const groups: Group[] = [
-      new Group("Group1", "Group1"),
-      new Group("Group2", "Group2")
+      new Group('Group1', 'Group1'),
+      new Group('Group2', 'Group2')
     ];
     const one = new Series();
-    one.name = "Series1";
-    one.category = "Category1";
+    one.name = 'Series1';
+    one.category = 'Category1';
     groups[0].series.push(one);
 
     const two = new Series();
-    two.name = "Series2";
-    two.category = "Category 2";
+    two.name = 'Series2';
+    two.category = 'Category 2';
     groups[1].series.push(two);
 
     const expected_categories: Category[] = [];
-    const catone = new Category("Category1");
+    const catone = new Category('Category1');
     catone.addSeries(one);
 
-    const cattwo = new Category("Category 2");
+    const cattwo = new Category('Category 2');
     cattwo.addSeries(two);
 
     expected_categories.push(catone, cattwo);
@@ -243,26 +245,26 @@ describe('column_values_to_name_maps', () => {
 
 describe('replace_symbol_with_phrase', () => {
   it('should replace % with Pcnt', () => {
-    const expected_value = "Pcnt";
-    const actual_value = replace_symbol_with_phrase("%");
+    const expected_value = 'Pcnt';
+    const actual_value = replace_symbol_with_phrase('%');
 
     assert.equal(actual_value, expected_value);
   });
   it('should replace - with To', () => {
-    const expected_value = "To";
-    const actual_value = replace_symbol_with_phrase("-");
+    const expected_value = 'To';
+    const actual_value = replace_symbol_with_phrase('-');
 
     assert.equal(actual_value, expected_value);
   });
   it('should replace & with And', () => {
-    const expected_value = "And";
-    const actual_value = replace_symbol_with_phrase("&");
+    const expected_value = 'And';
+    const actual_value = replace_symbol_with_phrase('&');
 
     assert.equal(actual_value, expected_value);
   });
   it('should not replace any other value', () => {
-    const expected_value = "A";
-    const actual_value = replace_symbol_with_phrase("A");
+    const expected_value = 'A';
+    const actual_value = replace_symbol_with_phrase('A');
     
     assert.equal(actual_value, expected_value);
   });
@@ -270,9 +272,9 @@ describe('replace_symbol_with_phrase', () => {
 
 describe('replace_all_symbols_with_phrases', () => {
   it('should replace all symbols with phrases', () => {
-    const input = "Total%12-13&Correlation";
+    const input = 'Total%12-13&Correlation';
     
-    const expected_value = "TotalPcnt12To13AndCorrelation";
+    const expected_value = 'TotalPcnt12To13AndCorrelation';
     const actual_value = replace_all_symbols_with_phrases(input);
 
     assert.equal(actual_value, expected_value);
@@ -281,25 +283,25 @@ describe('replace_all_symbols_with_phrases', () => {
 
 describe('sanitize_name', () => {
   it('should remove spaces from any input', () => {
-    const input = "Test Name";
+    const input = 'Test Name';
 
-    const expected_value = "TestName";
+    const expected_value = 'TestName';
     const actual_value = sanitize_name(input);
 
     assert.equal(actual_value, expected_value);
   });
   it('should replace any symbols in the input', () => {
-    const input = "Total%";
+    const input = 'Total%';
 
-    const expected_value = "TotalPcnt";
+    const expected_value = 'TotalPcnt';
     const actual_value = sanitize_name(input);
 
     assert.equal(actual_value, expected_value);
   });
   it('should replace symbols and remove spaces from the same input', () => {
-    const input = "Total% Test";
+    const input = 'Total% Test';
     
-    const expected_value = "TotalPcntTest";
+    const expected_value = 'TotalPcntTest';
     const actual_value = sanitize_name(input);
 
     assert.equal(actual_value, expected_value);

@@ -1,11 +1,11 @@
-import { assert } from "chai";
-import "mocha";
+import { assert } from 'chai';
+import 'mocha';
 
 import {
   retrieve_labeled_column_names, 
   retrieve_labeled_columns, 
   remove_name_map_duplicates
-} from "../metadata";
+} from '../metadata';
 
 import { 
   ColumnInfo, 
@@ -13,21 +13,21 @@ import {
   Postgres_Type, 
   Column_Modifier_Values,
   ColumnNameMap
-} from "../settings/parse";
+} from '../settings/parse.old';
 
 const columns: ColumnInfo[] = [
   {
     nameMap: {
-      original: "test",
-      alias: "test",
+      original: 'test',
+      alias: 'test',
     },
     label: Column_Label_Values.KEY,
     type: Postgres_Type.NUMBER
   },
   {
     nameMap: {
-      original: "test2",
-      alias: "test2"
+      original: 'test2',
+      alias: 'test2'
     },
     label: Column_Label_Values.ANCHOR,
     type: Postgres_Type.NUMBER
@@ -50,8 +50,8 @@ describe('retrieve_labeleled_column_names', () => {
     const desired_label = Column_Label_Values.KEY;
 
     const expected_value = [{
-      original: "test",
-      alias: "test"
+      original: 'test',
+      alias: 'test'
     }];
     const actual_value = retrieve_labeled_column_names(columns, desired_label);
 
@@ -63,16 +63,16 @@ describe('remove_name_map_duplicates', () => {
   it('should remove duplicates of column name maps with the same original value', () => {
     const names: ColumnNameMap[] = [
       {
-        original: "test",
-        alias: "test"
+        original: 'test',
+        alias: 'test'
       },
       {
-        original: "test",
-        alias: "test"
+        original: 'test',
+        alias: 'test'
       },
       {
-        original: "test 2",
-        alias: "test2"
+        original: 'test 2',
+        alias: 'test2'
       }
     ];
 
@@ -81,7 +81,7 @@ describe('remove_name_map_duplicates', () => {
 
     assert.deepEqual(actual_value, expected_value);
   });
-})
+});
 
 describe('make_config', () => {
   it('should have tests written for it', () => assert.fail());

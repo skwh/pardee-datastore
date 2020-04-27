@@ -1,10 +1,10 @@
 import { assert } from 'chai';
-import "mocha";
+import 'mocha';
 
 import {
   Query,
   QueryFactory
-} from "../../db/query";
+} from '../../db/query';
 
 describe('make_select', () => {
   it('should convert an empty query into a star', () => {
@@ -20,8 +20,8 @@ describe('make_select', () => {
     const query = {
       domain: [
         {
-          key: "Key1",
-          values: ["Val1", "Val2"]
+          key: 'Key1',
+          values: ['Val1', 'Val2']
         }
       ]
     };
@@ -36,8 +36,8 @@ describe('make_select', () => {
     const query = {
       domain: [
         {
-          key: "Key1",
-          values: ["Val1", "Val2"]
+          key: 'Key1',
+          values: ['Val1', 'Val2']
         }
       ]
     };
@@ -90,15 +90,15 @@ describe('make_select', () => {
     const query = {
       dyad: {
         p: {
-          key: "test"
+          key: 'test'
         },
         q: {
-          cokey: "test2"
+          cokey: 'test2'
         }
       }
     };
     
-    const expected_value = "test,test2"
+    const expected_value = 'test,test2';
     const actual_value = QueryFactory.make_select(query);
 
     assert.equal(actual_value, expected_value);
@@ -108,7 +108,7 @@ describe('make_select', () => {
     const query = {
       domain: [
         {
-          key: "Key1",
+          key: 'Key1',
           values: []
         }
       ],
@@ -132,13 +132,13 @@ describe('make_where', () => {
     const query = {
       domain: [
         {
-          key: "Key1",
-          values: ["Val1"]
+          key: 'Key1',
+          values: ['Val1']
         }
       ]
     };
 
-    const expected_value = "Key1='Val1'";
+    const expected_value = 'Key1=\'Val1\'';
     const actual_value = query_builder.make_where(query);
 
     assert.equal(actual_value, expected_value);
@@ -148,13 +148,13 @@ describe('make_where', () => {
     const query = {
       domain: [
         {
-          key: "Key1",
-          values: ["Val1", "Val2"]
+          key: 'Key1',
+          values: ['Val1', 'Val2']
         }
       ]
     };
 
-    const expected_value = "Key1='Val1' OR Key1='Val2'";
+    const expected_value = 'Key1=\'Val1\' OR Key1=\'Val2\'';
     const actual_value = query_builder.make_where(query);
 
     assert.equal(actual_value, expected_value);
@@ -164,17 +164,17 @@ describe('make_where', () => {
     const query = {
       domain: [
         {
-          key: "Key1",
-          values: ["Val1"]
+          key: 'Key1',
+          values: ['Val1']
         },
         {
-          key: "Key2",
-          values: ["Val2"]
+          key: 'Key2',
+          values: ['Val2']
         }
       ]
     };
 
-    const expected_value = "Key1='Val1' OR Key2='Val2'";
+    const expected_value = 'Key1=\'Val1\' OR Key2=\'Val2\'';
     const actual_value = query_builder.make_where(query);
 
     assert.equal(actual_value, expected_value);
@@ -184,21 +184,21 @@ describe('make_where', () => {
     const query = {
       domain: [
         {
-          key: "Key1",
-          values: ["Val1", "Val2"]
+          key: 'Key1',
+          values: ['Val1', 'Val2']
         },
         {
-          key: "Key2",
-          values: ["Val3"]
+          key: 'Key2',
+          values: ['Val3']
         },
         {
-          key: "Key3",
-          values: ["Val4", "Val5", "Val6"]
+          key: 'Key3',
+          values: ['Val4', 'Val5', 'Val6']
         }
       ]
     };
 
-    const expected_value = "Key1='Val1' OR Key1='Val2' OR Key2='Val3' OR Key3='Val4' OR Key3='Val5' OR Key3='Val6'";
+    const expected_value = 'Key1=\'Val1\' OR Key1=\'Val2\' OR Key2=\'Val3\' OR Key3=\'Val4\' OR Key3=\'Val5\' OR Key3=\'Val6\'';
     const actual_value = query_builder.make_where(query);
 
     assert.equal(actual_value, expected_value);
@@ -217,11 +217,11 @@ describe('make_where', () => {
     const query = {
       domain: [
         {
-          key: "Key1",
+          key: 'Key1',
           values: []
         },
         {
-          key: "Key2",
+          key: 'Key2',
           values: []
         }
       ]
@@ -236,17 +236,17 @@ describe('make_where', () => {
     const query = {
       domain: [
         {
-          key: "Key1",
+          key: 'Key1',
           values: []
         },
         {
-          key: "Key2",
-          values: ["Val2"]
+          key: 'Key2',
+          values: ['Val2']
         }
       ]
     };
 
-    const expected_value = "Key2='Val2'";
+    const expected_value = 'Key2=\'Val2\'';
     const actual_value = query_builder.make_where(query);
     assert.equal(actual_value, expected_value);
   });
@@ -257,17 +257,17 @@ describe('make_where', () => {
     const query = {
       dyad: {
         p: {
-          key: "Key1",
-          values: ["Val1"]
+          key: 'Key1',
+          values: ['Val1']
         },
         q: {
-          cokey: "Key2",
-          values: ["Val2"]
+          cokey: 'Key2',
+          values: ['Val2']
         }
       }
     };
 
-    const expected_value = "(Key1='Val1') AND (Key2='Val2')";
+    const expected_value = '(Key1=\'Val1\') AND (Key2=\'Val2\')';
     const actual_value = dyadic_builder.make_where(query);
 
     assert.equal(actual_value, expected_value);
@@ -279,8 +279,8 @@ describe('query_to_sql', () => {
     const query_builder = new QueryFactory('example_table_name', 'monadic', {
       domain: [
         {
-          key: "Key1",
-          values: ["Val1", "Val2"]
+          key: 'Key1',
+          values: ['Val1', 'Val2']
         }
       ],
       range: {
@@ -308,7 +308,7 @@ describe('query_to_sql', () => {
   it('should handle a query without a domain', () => {
     const query_builder = new QueryFactory('example_table_name', 'monadic', {
       range: {
-        values: ["Val1"]
+        values: ['Val1']
       }
     });
 
@@ -322,16 +322,16 @@ describe('query_to_sql', () => {
     const query_builder = new QueryFactory('example_table_name', 'dyadic', {
       dyad: {
         p: {
-          key: "Key1",
-          values: ["Val1", "Val2"]
+          key: 'Key1',
+          values: ['Val1', 'Val2']
         },
         q: {
-          cokey: "Cokey1",
-          values: ["Val3", "Val4"]
+          cokey: 'Cokey1',
+          values: ['Val3', 'Val4']
         }
       },
       range: {
-        values: ["Range1", "Range2"]
+        values: ['Range1', 'Range2']
       }
     });
 
@@ -345,10 +345,10 @@ describe('query_to_sql', () => {
     const query_builder = new QueryFactory('example_table_name', 'dyadic', {
       dyad: {
         p: {
-          key: "Key1"
+          key: 'Key1'
         },
         q: {
-          cokey: "Key2",
+          cokey: 'Key2',
           values: ['Val1']
         }
       },
@@ -361,20 +361,20 @@ describe('query_to_sql', () => {
     const actual_value = query_builder.query_to_sql();
 
     assert.equal(actual_value, expected_value);
-  })
+  });
 
   it('should handle a dyadic query with both values in the domain missing', () => {
     const query_builder = new QueryFactory('example_table_name', 'dyadic', {
       dyad: {
         p: {
-          key: "Key1"
+          key: 'Key1'
         },
         q: {
-          cokey: "Key2"
+          cokey: 'Key2'
         }
       },
       range: {
-        values: ["Range1"]
+        values: ['Range1']
       }
     });
 
@@ -382,5 +382,5 @@ describe('query_to_sql', () => {
     const actual_value = query_builder.query_to_sql();
 
     assert.equal(actual_value, expected_value);
-  })
+  });
 });

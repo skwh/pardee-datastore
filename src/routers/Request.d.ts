@@ -1,5 +1,7 @@
-import { Group, Series, Category } from '../models/Series';
-import { ColumnNameMap } from '../settings/parse';
+import { Category } from '../models/Category.model';
+import { Series } from '../models/Series.model';
+import { Group } from '../models/Group.model';
+import { ColumnNameMap } from '../models/ColumnNameMap.model';
 /**
  * Add the group, series, and category property to the Express Request object.
  * This is so that param pre-routing will work correctly: when a param is detected,
@@ -9,10 +11,10 @@ import { ColumnNameMap } from '../settings/parse';
  */
 declare module 'express-serve-static-core' {
   export interface Request {
-    group?: Group;
-    series?: Series;
-    category?: Category;
-    key?: ColumnNameMap;
-    cokey?: ColumnNameMap;
+    group: Group;
+    series: Series;
+    category: Category;
+    key: ColumnNameMap;
+    cokey: ColumnNameMap;
   }
 }

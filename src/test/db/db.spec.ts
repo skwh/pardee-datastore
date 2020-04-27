@@ -1,11 +1,11 @@
 import { assert } from 'chai';
-import "mocha";
+import 'mocha';
 
 import {
   Database
 } from '../../db/db';
-import { Pool, QueryResult } from "pg";
-import { ColumnInfo, Postgres_Type, Column_Label_Values } from '../../settings/parse';
+import { Pool, QueryResult } from 'pg';
+import { ColumnInfo, Postgres_Type, Column_Label_Values } from '../../settings/parse.old';
 
 describe('Database', () => {
   let db: Database;
@@ -13,16 +13,16 @@ describe('Database', () => {
   const column_info: ColumnInfo[] = [
     {
       nameMap: {
-        original: "test",
-        alias: "test"
+        original: 'test',
+        alias: 'test'
       },
       type: Postgres_Type.NUMBER,
       label: Column_Label_Values.SPECIAL
     },
     {
       nameMap: {
-        original: "test2",
-        alias: "test2"
+        original: 'test2',
+        alias: 'test2'
       },
       type: Postgres_Type.STRING,
       label: Column_Label_Values.ANCHOR
@@ -40,7 +40,7 @@ describe('Database', () => {
         return Promise.resolve({ rows: [str] } as QueryResult);
       }
     } as Pool);
-  })
+  });
   
   describe('stringify_column_info', () => {
     it('should turn a column info object into a string', () => {
@@ -89,10 +89,10 @@ describe('Database', () => {
   });
 
   it('should make a correct load csv query', async () => {
-    const file_path = "test/file/path.csv";
+    const file_path = 'test/file/path.csv';
     // The copy command in Postgres requires an escape at the beginning.
     // eslint-disable-next-line no-useless-escape
-    const expected_value = `\COPY ${table_name} FROM '${file_path}' DELIMITER ',' CSV HEADER;`
+    const expected_value = `\COPY ${table_name} FROM '${file_path}' DELIMITER ',' CSV HEADER;`;
     const { rows } = await db.load_from_csv(table_name, file_path);
 
     assert.equal(rows[0], expected_value);

@@ -16,7 +16,7 @@ export const Server = function(deps: AppDependencies, options: AppOptions) {
   const cors_with_options = cors(options.corsOptions);
 
   if (options.serve_static_path) {
-    console.info("Serving static content from", options.serve_static_path);
+    console.info('Serving static content from', options.serve_static_path);
     server.use('/', express.static(options.serve_static_path));
   }
 
@@ -26,7 +26,7 @@ export const Server = function(deps: AppDependencies, options: AppOptions) {
 
   server.get('/cokeys', cors_with_options, (_, res) => {
     res.json(make_response(Response_Category.Cokeys, options.config.labels.cokey));
-  })
+  });
 
   server.get('/range/values', cors_with_options, (_, res) => {
     res.json(make_response(Response_Category.Range, options.config.labels.range));
@@ -36,7 +36,9 @@ export const Server = function(deps: AppDependencies, options: AppOptions) {
     res.json(make_response(Response_Category.Special, options.config.labels.special));
   });
 
-  server.use('/categories', cors_with_options, CategoryRouter(deps, options));
+  if (options.config.categories !== undefined) {
+    server.use('/categories', cors_with_options, CategoryRouter(deps, options));
+  }
 
   server.use('/groups', cors_with_options, GroupsRouter(deps, options));
   
@@ -57,4 +59,4 @@ export const Server = function(deps: AppDependencies, options: AppOptions) {
   });
 
   return server;
-}
+};

@@ -1,16 +1,19 @@
-import cors, { CorsOptions } from "cors";
-import helmet from "helmet";
-import slugify from "slugify";
-import path from "path";
-import { Pool } from "pg";
+import cors, { CorsOptions } from 'cors';
+import helmet from 'helmet';
+import slugify from 'slugify';
+import path from 'path';
+import { Pool } from 'pg';
 
-import httpLogger from "./lib/http-logger";
+import httpLogger from './lib/http-logger';
 import { isNothing } from './lib/Maybe';
 
 import { Database } from './db/db';
-import { MetadataLoader } from "./metadata";
-import { AppDependencies, AppOptions } from "./models/ApplicationData";
-import { Server } from "./server";
+import { MetadataLoader } from './metadata';
+import { AppDependencies, AppOptions } from './models/ApplicationData';
+import { Server } from './server';
+import { load_yaml } from './utils';
+import { SettingsParser } from './settings/parser';
+import { isLeft } from './lib/Either';
 
 const CONFIG_FOLDER = 'config';
 
@@ -23,10 +26,10 @@ const no_serve = process.env.NO_SERVE ? true : false;
 const strict = process.env.STRICT_LOAD ? true : false;
 
 const corsOptions: CorsOptions = {
-  "origin": cors_origin,
-  "methods": "GET,HEAD,PUT,PATCH,POST,DELETE",
-  "preflightContinue": false,
-  "optionsSuccessStatus": 204
+  'origin': cors_origin,
+  'methods': 'GET,HEAD,PUT,PATCH,POST,DELETE',
+  'preflightContinue': false,
+  'optionsSuccessStatus': 204
 };
 
 async function connect_to_database(db: Database): Promise<boolean> {
@@ -43,7 +46,7 @@ const appDependencies: AppDependencies = {
   helmet: helmet,
   slugify: slugify,
   cors: cors
-}
+};
 
 async function start_app(db: Database): Promise<void> {
   // this is the path from which the application is run.
@@ -53,8 +56,15 @@ async function start_app(db: Database): Promise<void> {
 
   try {
     const final_config_path = path.join(absolute_application_path, config_path);
+    const final_settings_path = path.join(final_config_path, 'settings.yml');
 
-    const metadata_loader = new MetadataLoader(db, final_config_path, {
+    const yaml = load_yaml(final_settings_path);
+    const settings = await SettingsParser(yaml);
+    if (isLeft(settings)) {
+      throw settings.value;
+    }
+
+    const metadata_loader = new MetadataLoader(db, settings.value, final_config_path, {
       clear_old: clear_old,
       strict: strict,
       only_clear: only_clear
@@ -63,7 +73,7 @@ async function start_app(db: Database): Promise<void> {
     const config  = await metadata_loader.load_metadata_to_table();
 
     if (isNothing(config)) {
-      throw new Error("Application config was not loaded!");
+      throw new Error('Application config was not loaded!');
     }
 
     const applicationConfig = config.value;
@@ -84,7 +94,7 @@ async function start_app(db: Database): Promise<void> {
       serve_static_path: static_path,
       httpLogger: httpLogger,
       config: applicationConfig
-    }
+    };
 
     const app = Server(appDependencies, appOptions);
 
@@ -99,14 +109,14 @@ async function start_app(db: Database): Promise<void> {
 function main(): void {
   const db: Database = new Database(new Pool());
 
-  console.info("Server application started. Waiting for database connection.");
+  console.info('Server application started. Waiting for database connection.');
 
   // eslint-disable-next-line @typescript-eslint/no-misused-promises
   setTimeout(async () => {
     try {
       const connected = await connect_to_database(db);
       if (!connected) {
-        throw new Error("Could not connect to database after 5 seconds.");
+        throw new Error('Could not connect to database after 5 seconds.');
       } else {
         start_app(db);
       }

@@ -1,14 +1,14 @@
-import { ColumnNameMap } from "./settings/parse";
+import { ColumnNameMap } from './settings/parse.old';
 
 export enum Response_Category {
-  Keys = "keys",
-  Values = "values",
-  Range = "range",
-  Special = "special",
-  Groups = "groups",
-  Dataseries = "dataseries",
-  Categories = "categories",
-  Cokeys = "cokeys",
+  Keys = 'keys',
+  Values = 'values',
+  Range = 'range',
+  Special = 'special',
+  Groups = 'groups',
+  Dataseries = 'dataseries',
+  Categories = 'categories',
+  Cokeys = 'cokeys',
 }
 
 export type Response = {
@@ -20,14 +20,14 @@ export function make_response(category: Response_Category, values: ColumnNameMap
 export function make_response(category: Response_Category, values): Response {
   const res: Response = {};
   // Typescript function overloading: test type of element in values
-  if (typeof values[0] === "string") {
+  if (typeof values[0] === 'string') {
     res[category] = values.map((v: string) => {
       return {
         alias: v,
         original: v
-      }
+      };
     });
-  } else if (typeof values[0] === "object") {
+  } else if (typeof values[0] === 'object') {
     res[category] = values;
   }
   

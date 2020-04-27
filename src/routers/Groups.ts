@@ -1,15 +1,17 @@
-import Router from "express-promise-router";
-import generator from "json-2-csv";
-import express from "express";
+import Router from 'express-promise-router';
+import generator from 'json-2-csv';
+import express from 'express';
 
 import { Maybe, findMaybe, isNothing } from '../lib/Maybe';
 
-import { Group, Series } from '../models/Series';
-import { AppOptions, AppDependencies } from "../models/ApplicationData";
-import { find_object_in_label_list, Column_Label_Values } from "../settings/parse";
-import { make_response, Response_Category } from "../api";
-import { has_prop } from "../utils";
-import { Query, QueryFactory } from "../db/query";
+import { AppOptions, AppDependencies } from '../models/ApplicationData';
+import { make_response, Response_Category } from '../api';
+import { has_prop } from '../utils';
+import { Query, QueryFactory } from '../db/query';
+import { Group } from '../models/Group.model';
+import { Series } from '../models/Series.model';
+import { find_object_in_label_list } from '../settings/parse.old';
+import { Column_Label_Values } from '../models/ColumnValues.enum';
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export function GroupsRouter(dependencies: AppDependencies, options: AppOptions) {
@@ -30,7 +32,7 @@ export function GroupsRouter(dependencies: AppDependencies, options: AppOptions)
   } = {};
 
   function make_download_key(group: Group, series: Series): string {
-    return `${group.name}_${series.slug}`;
+    return `${group.name}_${series.name}`;
   }
 
   function generate_id(): number {
@@ -56,7 +58,7 @@ export function GroupsRouter(dependencies: AppDependencies, options: AppOptions)
   }
 
   function find_series_in_group(group: Group, name: string): Maybe<Series> {
-    return findMaybe(group.series, (s: Series) => s.name == name);
+    return findMaybe(group.dataseries, (s: Series) => s.name == name);
   }
 
   groups_router.get('/values', cors_with_options, (req, res) => {
@@ -110,12 +112,12 @@ export function GroupsRouter(dependencies: AppDependencies, options: AppOptions)
   groups_router.get('/:group', cors(corsOptions), (req, res) => {
     res.json({
       name: req.group.name,
-      series: req.group.series.map(s => s.name)
+      series: req.group.dataseries.map(s => s.name)
     });
   });
 
   groups_router.get('/:group/keys/:key/values', cors_with_options, (req, res) => {
-    const values = req.group.domainKeyValues[req.key.alias];
+    const values = req.group.domain_keys[req.key.alias];
     if (values === undefined) {
       res.sendStatus(404);
       return;
@@ -124,16 +126,16 @@ export function GroupsRouter(dependencies: AppDependencies, options: AppOptions)
   });
 
   groups_router.get('/:group/cokeys/:cokey/values', cors_with_options, (req, res) => {
-    const cokeys = req.group.domainKeyValues[req.cokey.alias];
+    const cokeys = req.group.codomain_keys[req.cokey.alias];
     if (cokeys === undefined) {
       res.sendStatus(404);
       return;
     }
     res.json(make_response(Response_Category.Cokeys, cokeys));
-  })
+  });
 
   groups_router.get('/:group/dataseries/values', cors(corsOptions), (req, res) => {
-    res.json(make_response(Response_Category.Dataseries, req.group.series.map(s => s.name)));
+    res.json(make_response(Response_Category.Dataseries, req.group.dataseries.map(s => s.name)));
   });
 
   groups_router.get('/:group/dataseries/:series', cors_with_options, async (req, res) => {
@@ -148,33 +150,31 @@ export function GroupsRouter(dependencies: AppDependencies, options: AppOptions)
       'text/csv': async () => {
         const csv = await generator.json2csvAsync(rows);
         if (download) {
-          const filename = series_table_name + ".csv";
-          res.setHeader('Content-Disposition', `attachment; filename="${filename}"`)
+          const filename = series_table_name + '.csv';
+          res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
         }
         res.send(csv);
       },
 
       'default': () => {
         if (download) {
-          const filename = series_table_name + ".json";
-          res.setHeader('Content-Disposition', `attachment; filename="${filename}"`)
+          const filename = series_table_name + '.json';
+          res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
         }
         res.json(rows);
       }
-    })
+    });
   });
 
   groups_router.get('/:group/dataseries/:series/info', cors_with_options, (req, res) => {
     res.json({
       name: req.series.name,
       category: req.series.category,
-      group: req.series.groupName,
+      group: req.series.group,
       type: req.series.type,
-      description: req.series.description,
-      unit: req.series.units,
-      other: req.series.other
+      metadata: req.series.metadata
     });
-  })
+  });
 
   groups_router.get('/:group/dataseries/:series/query/result', cors_with_options, (req, res) => {
     const { id } = req.query;
@@ -189,14 +189,14 @@ export function GroupsRouter(dependencies: AppDependencies, options: AppOptions)
       'text/csv': async () => {
         const csv = await generator.json2csvAsync(data as object[]);
         if (download) {
-          res.setHeader('Content-Disposition', `attachment; filename="${filename}.csv"`)
+          res.setHeader('Content-Disposition', `attachment; filename="${filename}.csv"`);
         }
         res.send(csv);
       },
 
       'default': () => {
         if (download) {
-          res.setHeader('Content-Disposition', `attachment; filename="${filename}.json"`)
+          res.setHeader('Content-Disposition', `attachment; filename="${filename}.json"`);
         }
         res.json(data);
       }
@@ -217,14 +217,14 @@ export function GroupsRouter(dependencies: AppDependencies, options: AppOptions)
     if (!QUERY) {
       res.sendStatus(400);
     }
-    console.debug("performing query: ", QUERY);
+    console.debug('performing query: ', QUERY);
 
     const { rows } = await database.query(QUERY);
 
     const filename = series_table_name;
     const id = add_key_to_download_map(req.group, req.series, rows, filename, download);
 
-    const constructed_url = req.baseUrl + req.path + `/result?id=${id}`
+    const constructed_url = req.baseUrl + req.path + `/result?id=${id}`;
 
     res.send(constructed_url);
   });

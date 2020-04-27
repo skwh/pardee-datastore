@@ -1,9 +1,9 @@
-import Router from "express-promise-router";
+import Router from 'express-promise-router';
 
 import { findMaybe, isNothing } from '../lib/Maybe';
 
-import { AppDependencies, AppOptions } from "../models/ApplicationData";
-import { make_response, Response_Category } from "../api";
+import { AppDependencies, AppOptions } from '../models/ApplicationData';
+import { make_response, Response_Category } from '../api';
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export function CategoryRouter(dependencies: AppDependencies, options: AppOptions) {
@@ -26,7 +26,7 @@ export function CategoryRouter(dependencies: AppDependencies, options: AppOption
       req.category = found_category.value;
       next();
     }
-  })
+  });
 
   category_router.get('/:category/dataseries', cors_with_options, (req, res) => {
     res.json(make_response(Response_Category.Dataseries, req.category.series.map(s => s.name)));

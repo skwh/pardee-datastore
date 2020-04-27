@@ -104,7 +104,7 @@ describe('Utility functions', () => {
     it('should correctly create a string of dollar args', () => {
       const num = 2;
       
-      const expected_value = "$1, $2";
+      const expected_value = '$1, $2';
       const actual_value = argsString(num);
 
       assert.equal(actual_value, expected_value);
@@ -136,4 +136,4 @@ describe('Utility functions', () => {
       assert.equal(actual_value, expected_value);
     });
   });
-})
+});
