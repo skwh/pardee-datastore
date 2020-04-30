@@ -1,3 +1,5 @@
+import path from 'path';
+
 import { Either, Left, Right, isLeft } from '../lib/Either';
 import { load_csv, location_exists, zip, has_prop } from '../utils';
 
@@ -89,10 +91,13 @@ function handlebars_replace_recursive(vars: Record<string, string>, object: Reco
   return Right(object);
 }
 
-export async function TemplateParser(template: Partial<Template>): Promise<Either<ParseError, ParsedGroup[]>> {
+export async function TemplateParser(template: Partial<Template>, absolute_application_path: string): Promise<Either<ParseError, ParsedGroup[]>> {
   if (!unsafeIsSafe(template)) {
     return Left(ParseError.MissingParamsError(template, 'template', ['path', 'columns', 'dataseries']));
   }
+
+  const absolute_template_path = path.join(absolute_application_path, template.path);
+  template.path = absolute_template_path;
 
   if (!location_exists(template.path)) {
     return Left(new ParseError(`Template file ${template.path} does not exist.`));
@@ -121,7 +126,7 @@ export async function TemplateParser(template: Partial<Template>): Promise<Eithe
     unsafe_series.push(parsed_template.value);
   }
 
-  const safe_series = DataseriesParser(unsafe_series);
+  const safe_series = DataseriesParser(unsafe_series, absolute_application_path);
   if (isLeft(safe_series)) {
     return safe_series;
   }

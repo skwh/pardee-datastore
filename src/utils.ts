@@ -136,3 +136,7 @@ export function resEither<T, Q>(res: Response, either: Either<T, Q>, fail_code: 
   }
   res.json(either.value);
 }
+
+export function has_all_props(obj: any, props: string[]): boolean {
+  return allOf((k: string) => has_prop(obj, k), props);
+}

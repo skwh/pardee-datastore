@@ -54,17 +54,23 @@ async function start_app(db: Database): Promise<void> {
   // this should be "sth./pardee-datastore/"
   const absolute_application_path = path.resolve('.');
 
+  console.info('Got database connection. Parsing settings file.');
+
   try {
     const final_config_path = path.join(absolute_application_path, config_path);
     const final_settings_path = path.join(final_config_path, 'settings.yml');
 
     const yaml = load_yaml(final_settings_path);
-    const settings = await SettingsParser(yaml);
+    const settings = await SettingsParser(yaml, final_config_path);
     if (isLeft(settings)) {
       throw settings.value;
+    } else {
+      console.info('Settings parsed successfully.');
     }
 
-    const metadata_loader = new MetadataLoader(db, settings.value, final_config_path, {
+    const metadata_loader = new MetadataLoader(db, 
+                                               settings.value, 
+                                               final_config_path, {
       clear_old: clear_old,
       strict: strict,
       only_clear: only_clear
@@ -74,6 +80,8 @@ async function start_app(db: Database): Promise<void> {
 
     if (isNothing(config)) {
       throw new Error('Application config was not loaded!');
+    } else {
+      console.info('Settings loaded to database successfully.');
     }
 
     const applicationConfig = config.value;
@@ -98,7 +106,7 @@ async function start_app(db: Database): Promise<void> {
 
     const app = Server(appDependencies, appOptions);
 
-    app.listen(8000, () => console.info(' == Server running =='));
+    app.listen(8000, () => console.info(' === Server running ==='));
 
   } catch (e) {
     console.error(e);
@@ -109,7 +117,7 @@ async function start_app(db: Database): Promise<void> {
 function main(): void {
   const db: Database = new Database(new Pool());
 
-  console.info('Server application started. Waiting for database connection.');
+  console.info('Waiting for database connection.');
 
   // eslint-disable-next-line @typescript-eslint/no-misused-promises
   setTimeout(async () => {

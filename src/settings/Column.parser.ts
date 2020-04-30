@@ -15,7 +15,7 @@ interface SafeColumn {
   modifier?: string;
 }
 
-function modify_column_name(name: string): string {
+export function modify_column_name(name: string): string {
   if (/^\d+/.test(name)) {
     return 'n' + name;
   }

@@ -37,7 +37,7 @@ export const Server = function(deps: AppDependencies, options: AppOptions) {
   });
 
   if (options.config.categories !== undefined) {
-    server.use('/categories', cors_with_options, CategoryRouter(deps, options));
+    server.use('/categories', cors_with_options, CategoryRouter(options.config.categories, deps, options));
   }
 
   server.use('/groups', cors_with_options, GroupsRouter(deps, options));

@@ -10,11 +10,11 @@ import { ColumnNameMap } from './ColumnNameMap.model';
  * ANCHOR : this column has the same value for the entire table.
  */
 export enum Column_Label_Values {
-  KEY = 'key',
-  COKEY = 'cokey',
-  SPECIAL = 'special',
-  RANGE = 'range',
-  ANCHOR = 'anchor'
+  key = 'key',
+  cokey = 'cokey',
+  special = 'special',
+  range = 'range',
+  anchor = 'anchor'
 }
 
 /**

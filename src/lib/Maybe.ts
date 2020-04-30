@@ -63,6 +63,7 @@ export function undefinedToMaybe<A, B>(v: A, func: (a: A) => B | undefined): May
   return Just(val);
 }
 
-export function findMaybe<A>(as: A[], predicate: (a: A) => boolean): Maybe<A> {
+export function findMaybe<A>(as: A[] | undefined, predicate: (a: A) => boolean): Maybe<A> {
+  if (as === undefined) return Nothing;
   return undefinedToMaybe((a: A) => predicate(a), (v) => as.find(v));
 }

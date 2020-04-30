@@ -33,8 +33,11 @@ export type Condition = {
   value: ColumnPair | ConditionTree;
 }
 
+export type QueryColumns = string[] | '*';
+export type QueryCondition = Condition | 'true';
+
 
 export interface SqlQuery {
-  columns: string[] | '*';
-  condition: Condition | 'true';
+  columns: QueryColumns;
+  condition: QueryCondition;
 }

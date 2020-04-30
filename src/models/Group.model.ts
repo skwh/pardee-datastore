@@ -6,4 +6,5 @@ export interface Group {
   dataseries: Series[];
   domain_keys: Record<string, ColumnNameMap[]>;
   codomain_keys: Record<string, ColumnNameMap[]>;
+  combined_key_values: string[];
 }

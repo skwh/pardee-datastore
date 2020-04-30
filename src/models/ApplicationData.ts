@@ -9,6 +9,7 @@ import { LabelList } from './ColumnValues.enum';
 export interface ApplicationConfig {
   groups: Group[];
   labels: LabelList;
+  shared_column_names: string[];
   categories?: Category[];
 }
 

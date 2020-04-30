@@ -1,3 +1,5 @@
+import path from 'path';
+
 import { Either, Left, Right } from '../lib/Either';
 
 import { UnsafeSeries } from '../models/unsafe/Unsafe.model';
@@ -28,7 +30,7 @@ function parse_series_type(type: string): type is 'monadic' | 'dyadic'  {
   return (type === 'monadic' || type === 'dyadic');
 }
 
-export function DataseriesParser(unsafe_series: UnsafeSeries[], group_name?: string): Either<ParseError, Series[]> {
+export function DataseriesParser(unsafe_series: UnsafeSeries[], absolute_application_path: string, group_name?: string): Either<ParseError, Series[]> {
   const series_list: Series[] = [];
 
   for (const series of unsafe_series) {
@@ -38,6 +40,9 @@ export function DataseriesParser(unsafe_series: UnsafeSeries[], group_name?: str
     if (!unsafeIsSafe(series)) {
       return Left(ParseError.MissingParamsError(series, 'dataseries', ['name', 'location', 'type', 'group']));
     }
+
+    const absolute_series_location = path.join(absolute_application_path, series.location);
+    series.location = absolute_series_location;
 
     if (!location_exists(series.location)) {
       return Left(new ParseError(`Dataseries ${series.name} location ${series.location} does not exist.`));

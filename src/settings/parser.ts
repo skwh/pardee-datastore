@@ -25,7 +25,7 @@ function yamlIsRecord(yaml: unknown): yaml is Record<string, unknown> {
   return (typeof yaml === 'object');
 }
 
-export async function SettingsParser(yaml: unknown): Promise<Either<ParseError, ParsedSettingsData>> {
+export async function SettingsParser(yaml: unknown, absolute_application_path: string): Promise<Either<ParseError, ParsedSettingsData>> {
   if (!yamlIsRecord(yaml)) {
     return Left(new ParseError(`Invalid format for settings.yml file.`));
   }
@@ -46,9 +46,9 @@ export async function SettingsParser(yaml: unknown): Promise<Either<ParseError, 
 
   const groups_result = await (async function(): Promise<Either<ParseError, ParsedGroup[]>> {
     if (has_prop(yaml, Settings_Sections_Values.TEMPLATE)) {
-      return await TemplateParser(yaml.template as Partial<Template>);
+      return await TemplateParser(yaml.template as Partial<Template>, absolute_application_path);
     } else if (has_prop(yaml, Settings_Sections_Values.GROUPS)) {
-      return GroupListParser(yaml.groups as UnsafeGroup[]);
+      return GroupListParser(yaml.groups as UnsafeGroup[], absolute_application_path);
     }
     return Left(new ParseError(`Settings file is missing required section(s): either 'groups' or 'template' must be present.`));
   })();

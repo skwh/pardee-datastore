@@ -1,5 +1,3 @@
-import path from 'path';
-
 import { Maybe, Just, Nothing, isNothing } from './lib/Maybe';
 
 import { Group } from './models/Group.model';
@@ -18,15 +16,20 @@ interface LoadFlags {
   only_clear: boolean;
 }
 
-export function retrieve_labeled_columns(c: ParsedColumn[], label: Column_Label_Values): ParsedColumn[] {
+export function retrieve_labeled_columns(c: ParsedColumn[], 
+                                         label: Column_Label_Values): 
+                                         ParsedColumn[] {
   return c.filter(v => v.label == label);
 }
 
-export function retrieve_labeled_column_names(c: ParsedColumn[], label: Column_Label_Values): ColumnNameMap[] {
+export function retrieve_labeled_column_names(c: ParsedColumn[], 
+                                              label: Column_Label_Values): 
+                                              ColumnNameMap[] {
   return retrieve_labeled_columns(c, label).map(v => v.nameMap);
 }
 
-export function remove_name_map_duplicates(columns: ColumnNameMap[]): ColumnNameMap[] {
+export function remove_name_map_duplicates(columns: ColumnNameMap[]): 
+                                                              ColumnNameMap[] {
   const rec: Record<string, ColumnNameMap> = {};
   for (const column of columns) {
     if (!has_prop(rec, column.original)) {
@@ -41,7 +44,8 @@ function transform_to_group(group: ParsedGroup): Group {
     name: group.name,
     dataseries: group.dataseries,
     domain_keys: {},
-    codomain_keys: {}
+    codomain_keys: {},
+    combined_key_values: []
   };
 }
 
@@ -80,14 +84,19 @@ export class MetadataLoader {
   settings: ParsedSettingsData;
   configPath: string;
   fullGroups: Group[];
+  shared_column_names: string[];
 
 
-  constructor(database: Database, settings: ParsedSettingsData, config_path: string, load_flags: LoadFlags) {
+  constructor(database: Database, 
+              settings: ParsedSettingsData, 
+              config_path: string, 
+              load_flags: LoadFlags) {
     this.loadFlags = load_flags;
     this.database = database;
     this.settings = settings;
     this.configPath = config_path;
     this.fullGroups = [];
+    this.shared_column_names = settings.columns.map(c => c.nameMap.alias);
   }
 
   private async only_clear(series: Series): Promise<void> {
@@ -118,7 +127,9 @@ export class MetadataLoader {
     return false;
   }
 
-  private async make_or_recreate_index(series: Series, index_columns: ParsedColumn[]): Promise<boolean> {
+  private async make_or_recreate_index(series: Series, 
+                                       index_columns: ParsedColumn[]): 
+                                       Promise<boolean> {
     try {
       // Assume the index does not already exist.
       await this.database.make_index(series.table_name, index_columns);
@@ -133,28 +144,39 @@ export class MetadataLoader {
     return false;
   }
 
-  private async get_domain_values_from_table(series: Series, group: ParsedGroup): Promise<Group> {
+  private async get_domain_values_from_table(series: Series, 
+                                             group: ParsedGroup): 
+                                             Promise<Group> {
     const full_group = transform_to_group(group);
     for (const { alias } of this.settings.labels.key) {
       const domain_values = await this.database.get_domain_values(series.table_name, alias);
+      full_group.combined_key_values.push(...domain_values);
       full_group.domain_keys[alias] = remove_name_map_duplicates(column_values_to_name_maps(domain_values));
     }
 
     for (const { alias } of this.settings.labels.cokey) {
       const cokey_values = await this.database.get_domain_values(series.table_name, alias);
+      full_group.combined_key_values.push(...cokey_values);
       full_group.codomain_keys[alias] = remove_name_map_duplicates(column_values_to_name_maps(cokey_values));
     }
+
+    
+
     return full_group;
   }
 
-  private async load_series_in_group(group: ParsedGroup): Promise<Maybe<Group>> {
+  private async load_series_in_group(group: ParsedGroup): 
+                                                        Promise<Maybe<Group>> {
     let full_group: Maybe<Group> = Nothing;
     for (const [index, current_series] of group.dataseries.entries()) {
 
-      const series_file_location = path.join(this.configPath, current_series.location);
+      const series_file_location = current_series.location;
 
-      const domain_key_columns = retrieve_labeled_columns(this.settings.columns, Column_Label_Values.KEY);
-      const domain_cokey_columns = retrieve_labeled_columns(this.settings.columns, Column_Label_Values.COKEY);
+      const domain_key_columns = retrieve_labeled_columns(this.settings.columns, 
+                                                       Column_Label_Values.key);
+      const domain_cokey_columns = retrieve_labeled_columns(
+                                                    this.settings.columns,
+                                                    Column_Label_Values.cokey);
 
       const index_columns = domain_key_columns.concat(domain_cokey_columns);
 
@@ -169,7 +191,8 @@ export class MetadataLoader {
       // if the table was created, or re-created, re-load the csv.
       if (table_action_performed) {
         console.info(`Reloading CSV for table ${current_series.table_name}`);
-        await this.database.load_from_csv(current_series.table_name, series_file_location);
+        await this.database.load_from_csv(current_series.table_name, 
+                                                          series_file_location);
       }
       if (index_action_performed) {
         console.info(`Created index for table ${current_series.table_name}`);
@@ -204,6 +227,7 @@ export class MetadataLoader {
 
       return Just({
         groups: this.fullGroups,
+        shared_column_names: this.shared_column_names,
         categories: create_categories_if_exists(this.fullGroups),
         labels: this.settings.labels
       });

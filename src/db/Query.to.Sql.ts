@@ -1,4 +1,4 @@
-import { valueIsConditionTree, Condition, SqlQuery } from '../models/Query.model';
+import { valueIsConditionTree, Condition, SqlQuery, QueryColumns, QueryCondition } from '../models/Query.model';
 
 function stringify_condition(condition: Condition): string {
   if (valueIsConditionTree(condition.value)) {
@@ -9,13 +9,18 @@ function stringify_condition(condition: Condition): string {
   }
 }
 
-function columns_and_condition_to_sql_string(columns: string[] | '*', condition: Condition | 'true', table_name: string): string {
+function columns_and_condition_to_sql_string(columns: QueryColumns, 
+                                             condition: QueryCondition, 
+                                             table_name: string): string {
   let string_condition = '';
   if (condition === 'true') string_condition = condition;
   else string_condition = stringify_condition(condition);
   return `SELECT DISTINCT ${columns} FROM ${table_name} WHERE ${string_condition}`;
 }
 
-export function SqlQueryTransformer(query: SqlQuery, table_name: string): string {
-  return (columns_and_condition_to_sql_string(query.columns, query.condition, table_name));
+export function SqlQueryTransformer(query: SqlQuery, 
+                                    table_name: string): string {
+  return (columns_and_condition_to_sql_string(query.columns, 
+                                              query.condition, 
+                                              table_name));
 }

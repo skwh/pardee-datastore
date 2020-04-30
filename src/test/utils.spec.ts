@@ -71,7 +71,7 @@ describe('Utility functions', () => {
     it('should not generate any numbers if the spread is in the wrong order', () => {
       const bad_spread = '10..1';
 
-      const expected_value = [];
+      const expected_value: number[] = [];
       const actual_value = range_spread(bad_spread);
 
       assert.deepEqual(actual_value, expected_value);

@@ -4,9 +4,10 @@ import { findMaybe, isNothing } from '../lib/Maybe';
 
 import { AppDependencies, AppOptions } from '../models/ApplicationData';
 import { make_response, Response_Category } from '../api';
+import { Category } from '../models/Category.model';
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
-export function CategoryRouter(dependencies: AppDependencies, options: AppOptions) {
+export function CategoryRouter(categories: Category[], dependencies: AppDependencies, options: AppOptions) {
   const category_router = Router();
   const { cors } = dependencies;
   const { corsOptions } = options;
@@ -14,11 +15,11 @@ export function CategoryRouter(dependencies: AppDependencies, options: AppOption
   const cors_with_options = cors(corsOptions);
 
   category_router.get('/values', cors_with_options, (_, res) => {
-    res.json(make_response(Response_Category.Categories, options.config.categories.map(c => c.name)));
+    res.json(make_response(Response_Category.Categories, categories.map(c => c.name)));
   });
 
   category_router.param('category', (req, res, next, value) => {
-    const found_category = findMaybe(options.config.categories, c => c.name === value);
+    const found_category = findMaybe(categories, c => c.name === value);
     if (isNothing(found_category)) {
       res.sendStatus(404);
       return;
