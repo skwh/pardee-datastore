@@ -1,4 +1,4 @@
-import { ColumnNameMap } from './settings/parse.old';
+import { ColumnNameMap } from './models/ColumnNameMap.model';
 
 export enum Response_Category {
   Keys = 'keys',
@@ -17,7 +17,7 @@ export type Response = {
 
 export function make_response(category: Response_Category, values: string[]): Response;
 export function make_response(category: Response_Category, values: ColumnNameMap[]): Response;
-export function make_response(category: Response_Category, values): Response {
+export function make_response(category: Response_Category, values: any): Response {
   const res: Response = {};
   // Typescript function overloading: test type of element in values
   if (typeof values[0] === 'string') {

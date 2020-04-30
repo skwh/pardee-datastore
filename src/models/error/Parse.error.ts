@@ -5,7 +5,7 @@ export class ParseError extends Error {
     super(msg);
   }
 
-  static MissingParamsError(object, name: string, params: string[]): ParseError {
+  static MissingParamsError(object: any, name: string, params: string[]): ParseError {
     const missing_params = find_missing_params(object, params);
     return new ParseError(`A ${name} is missing param(s) ${Object.keys(missing_params)}`);
   }

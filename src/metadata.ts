@@ -1,18 +1,16 @@
 import path from 'path';
-import fs from 'fs';
 
 import { Maybe, Just, Nothing, isNothing } from './lib/Maybe';
 
 import { Group } from './models/Group.model';
 import { Series } from './models/Series.model';
-import { ApplicationConfig, ParsedSettingsData } from './models/ApplicationData';
+import { ApplicationConfig } from './models/ApplicationData';
 import { has_prop, sanitize_name } from './utils';
 import { Database } from './db/db';
-import { ParsedGroup } from './models/ParsedGroup.model';
-import { ParsedColumn } from './models/ParsedColumn.model';
 import { Column_Label_Values } from './models/ColumnValues.enum';
 import { ColumnNameMap } from './models/ColumnNameMap.model';
 import { Category } from './models/Category.model';
+import { ParsedColumn, ParsedGroup, ParsedSettingsData } from './models/parsed/Parsed.model';
 
 interface LoadFlags {
   clear_old: boolean;

@@ -1,9 +1,9 @@
-import express from 'express';
+import express, { Request, Response, RequestHandler } from 'express';
 
 import { AppDependencies, AppOptions } from './models/ApplicationData';
-import { GroupsRouter } from './routers/Groups';
+import { GroupsRouter } from './routers/Groups.router';
 import { make_response, Response_Category } from './api';
-import { CategoryRouter } from './routers/Category';
+import { CategoryRouter } from './routers/Category.router';
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export const Server = function(deps: AppDependencies, options: AppOptions) {
@@ -47,7 +47,7 @@ export const Server = function(deps: AppDependencies, options: AppOptions) {
   });
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  server.use((err, _req, res, _next) => {
+  server.use((err: any, _req: Request, res: Response, _next: RequestHandler) => {
     // If the error involved the JSON parser, return a 400 bad request
     if (err.type === 'entity.parse.failed') {
       res.sendStatus(400);

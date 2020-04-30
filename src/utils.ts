@@ -68,7 +68,7 @@ export function load_yaml(path: string): unknown {
   return yaml.safeLoad(fs.readFileSync(path, 'utf8'));
 }
 
-export function has_prop(obj, prop: string): boolean {
+export function has_prop(obj: any, prop: string): boolean {
   return Object.prototype.hasOwnProperty.call(obj, prop);
 }
 
@@ -77,7 +77,7 @@ export function remove_duplicates<T>(xs: T[]): T[] {
   return [...array_set];
 }
 
-export function find_missing_params(a, props: string[]): Record<string, boolean> {
+export function find_missing_params(a: any, props: string[]): Record<string, boolean> {
   const vals: Record<string, boolean> = {};
   props.forEach((v) => {
     if (!has_prop(a, v)) {

@@ -1,5 +1,6 @@
-import { ColumnNameMap, sanitize_name } from '../settings/parse.old';
 import { Series } from './Series.model';
+import { ColumnNameMap } from './ColumnNameMap.model';
+import { sanitize_name } from '../utils';
 
 export class Category {
   name: ColumnNameMap
