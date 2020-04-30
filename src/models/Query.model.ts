@@ -19,8 +19,11 @@ export function setIsDyadSet(set: ColumnSet): set is DyadColumnSet {
 
 type Connector = 'AND' | 'OR';
 
-export function valueIsConditionTree(value: ColumnPair | ConditionTree): value is ConditionTree {
-  return (value as ConditionTree).left !== undefined;
+export function valueIsConditionTree(value: ColumnPair | ConditionTree): 
+                                                        value is ConditionTree {
+  return (value as ConditionTree).left !== undefined       
+      && (value as ConditionTree).right !== undefined      
+      && (value as ConditionTree).connector !== undefined;
 }
 
 export type ConditionTree = {

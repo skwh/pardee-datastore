@@ -13,7 +13,8 @@ interface SafeGroup {
 }
 
 function unsafeIsSafe(group: UnsafeGroup): group is SafeGroup {
-  return (group.name !== undefined && group.dataseries !== undefined);
+  return group.name !== undefined 
+      && group.dataseries !== undefined;
 }
 
 export function GroupListParser(unsafe_groups: UnsafeGroup[], absolute_application_path: string): Either<ParseError, ParsedGroup[]> {

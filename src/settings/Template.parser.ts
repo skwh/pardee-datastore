@@ -12,10 +12,14 @@ import { DataseriesParser } from './Dataseries.parser';
 import { UnsafeSeries } from '../models/unsafe/Unsafe.model';
 
 function unsafeIsSafe(template: Partial<Template>): template is Template {
-  return (template.path !== undefined && template.columns !== undefined && template.dataseries !== undefined);
+  return template.path !== undefined 
+      && template.columns !== undefined
+      && template.dataseries !== undefined;
 }
 
-function csv_columns_match_given(csv: Record<string, string>[], columns: string[]): boolean {
+function csv_columns_match_given(csv: Record<string, string>[], 
+                                 columns: string[]): 
+                                 boolean {
   const csv_headers = Object.keys(csv[0]);
   for (const name of columns) {
     if (!csv_headers.includes(name)) {
@@ -50,7 +54,9 @@ export function sort_into_groups(series: Series[]): ParsedGroup[] {
  * @param template A string which might contain curly brackets (handlebars).
  * @returns A string with any replacements made.
  */
-function handlebars_replace(vars: Record<string, string>, template: string): Either<ParseError, string> {
+function handlebars_replace(vars: Record<string, string>, 
+                            template: string): 
+                            Either<ParseError, string> {
   const handlebar_regex = /({\w+})/gi;
   const matches = template.match(handlebar_regex);
   if (matches === null) {
@@ -70,10 +76,13 @@ function handlebars_replace(vars: Record<string, string>, template: string): Eit
   return Right(final);
 }
 
-function handlebars_replace_recursive(vars: Record<string, string>, object: Record<string, unknown>): Either<ParseError, Record<string, any>> {
+function handlebars_replace_recursive(vars: Record<string, string>, 
+                                      object: Record<string, unknown>): 
+                                      Either<ParseError, Record<string, any>> {
   for (const [key, value] of Object.entries(object)) {
     if (typeof value === 'object') {
-      const replace_recurse = handlebars_replace_recursive(vars, object[key] as Record<string, unknown>);
+      const replace_recurse = handlebars_replace_recursive(vars, 
+                                        object[key] as Record<string, unknown>);
       if (isLeft(replace_recurse)) {
         return replace_recurse;
       } else {
@@ -91,12 +100,18 @@ function handlebars_replace_recursive(vars: Record<string, string>, object: Reco
   return Right(object);
 }
 
-export async function TemplateParser(template: Partial<Template>, absolute_application_path: string): Promise<Either<ParseError, ParsedGroup[]>> {
+export async function TemplateParser(template: Partial<Template>, 
+                                     absolute_application_path: string): 
+                                     Promise<Either<ParseError, ParsedGroup[]>>{
   if (!unsafeIsSafe(template)) {
-    return Left(ParseError.MissingParamsError(template, 'template', ['path', 'columns', 'dataseries']));
+    return Left(
+      ParseError.MissingParamsError(template, 
+                                    'template', 
+                                    ['path', 'columns', 'dataseries']));
   }
 
-  const absolute_template_path = path.join(absolute_application_path, template.path);
+  const absolute_template_path = path.join(absolute_application_path,
+                                           template.path);
   template.path = absolute_template_path;
 
   if (!location_exists(template.path)) {
@@ -115,10 +130,14 @@ export async function TemplateParser(template: Partial<Template>, absolute_appli
   const unsafe_series: UnsafeSeries[] = [];
 
   for (const template_row of template_values) {
-    const row_variables_map = Object.fromEntries(zip(template.columns, Object.values(template_row))) as Record<string, string>;
-    const partial_series: Partial<TemplateSeries> = Object.assign({}, template.dataseries);
+    const row_variables_map = Object.fromEntries(
+                    zip(template.columns, 
+                        Object.values(template_row))) as Record<string, string>;
+    const partial_series: Partial<TemplateSeries> = Object.assign({}, 
+                                                           template.dataseries);
 
-    const parsed_template = handlebars_replace_recursive(row_variables_map, partial_series);
+    const parsed_template = handlebars_replace_recursive(row_variables_map, 
+                                                                partial_series);
     if (isLeft(parsed_template)) {
       return parsed_template;
     }

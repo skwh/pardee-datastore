@@ -363,3 +363,9 @@ volumes:
     source: ./dist/
     target: /var/www/view/dist
 ```
+
+# Developer Notes
+
+I add this section for anyone who comes along and needs to work with this application, modify it, or study it.
+
+Don't ask about the 80 column width thing.

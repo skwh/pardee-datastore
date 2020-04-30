@@ -60,7 +60,9 @@ function parse_column_from_spread(column: SafeColumn): Maybe<ParsedColumn[]> {
 }
 
 function unsafeIsSafe(unsafe: UnsafeColumn): unsafe is SafeColumn {
-  return (unsafe.label !== undefined && unsafe.name !== undefined && unsafe.type !== undefined);
+  return unsafe.label !== undefined 
+      && unsafe.name !== undefined 
+      && unsafe.type !== undefined;
 }
 
 export function ColumnParser(unsafe_columns: UnsafeColumn[]): Either<ParseError, ParsedColumn[]> {

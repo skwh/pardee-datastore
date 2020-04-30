@@ -23,14 +23,21 @@ function make_table_name(series: SafeSeries): string {
 }
 
 function unsafeIsSafe(series: UnsafeSeries): series is SafeSeries {
-  return (series.name !== undefined && series.location !== undefined && series.type !== undefined && series.group !== undefined);
+  return series.name     !== undefined 
+      && series.location !== undefined 
+      && series.type     !== undefined 
+      && series.group    !== undefined;
 }
 
 function parse_series_type(type: string): type is 'monadic' | 'dyadic'  {
-  return (type === 'monadic' || type === 'dyadic');
+  return type === 'monadic' 
+      || type === 'dyadic';
 }
 
-export function DataseriesParser(unsafe_series: UnsafeSeries[], absolute_application_path: string, group_name?: string): Either<ParseError, Series[]> {
+export function DataseriesParser(unsafe_series: UnsafeSeries[], 
+                                 absolute_application_path: string, 
+                                 group_name?: string): 
+                                 Either<ParseError, Series[]> {
   const series_list: Series[] = [];
 
   for (const series of unsafe_series) {

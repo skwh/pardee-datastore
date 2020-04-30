@@ -15,9 +15,15 @@ export type Response = {
   [key in Response_Category]?: ColumnNameMap[]
 };
 
-export function make_response(category: Response_Category, values: string[]): Response;
-export function make_response(category: Response_Category, values: ColumnNameMap[]): Response;
-export function make_response(category: Response_Category, values: any): Response {
+export function make_response(category: Response_Category, 
+                              values: string[]): 
+                              Response;
+export function make_response(category: Response_Category, 
+                              values: ColumnNameMap[]): 
+                              Response;
+export function make_response(category: Response_Category, 
+                              values: any): 
+                              Response {
   const res: Response = {};
   // Typescript function overloading: test type of element in values
   if (typeof values[0] === 'string') {
