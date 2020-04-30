@@ -143,6 +143,7 @@ function parse_query_condition_pairs(set: ColumnSet | 'true',
     all_pairs.push(...set.values);
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   for (const [__, value] of all_pairs) {
     if (!real_column_values.includes(value)) {
       return Left(

@@ -13,7 +13,8 @@ export interface ApplicationConfig {
   categories?: Category[];
 }
 
-type SlugifyOptions = string | { replacement?: string; remove?: RegExp; lower?: boolean; strict?: boolean };
+type SlugifyOptions = string | 
+   { replacement?: string; remove?: RegExp; lower?: boolean; strict?: boolean };
 
 export interface AppDependencies {
   helmet: () => RequestHandler;
@@ -23,7 +24,7 @@ export interface AppDependencies {
 
 export interface AppOptions {
   database: Database;
-  serve_static_path: string | undefined;
+  serve_static_path?: string;
   httpLogger: RequestHandler;
   corsOptions: CorsOptions;
   config: ApplicationConfig;
