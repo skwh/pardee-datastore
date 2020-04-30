@@ -4,7 +4,7 @@ import 'mocha';
 import {
   Query,
   QueryFactory
-} from '../../db/query';
+} from '../../db/Query.parser';
 
 describe('make_select', () => {
   it('should convert an empty query into a star', () => {

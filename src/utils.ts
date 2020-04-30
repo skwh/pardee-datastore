@@ -2,7 +2,9 @@ import yaml from 'js-yaml';
 import fs from 'fs';
 import csv from 'csv-parser';
 
-import { Maybe, Just, Nothing } from './lib/Maybe';
+import { Maybe, Just, Nothing, isNothing } from './lib/Maybe';
+import { Response } from 'express';
+import { isLeft, Either } from './lib/Either';
 
 export function anyOf<T>(predicate: ((x: T) => boolean), xs: T[]): boolean {
   for (let i = 0; i < xs.length; i++) {
@@ -117,4 +119,20 @@ export function zip<A,B>(as: A[], bs: B[]): Array<[A, B]> {
   } else {
     return as.map((a, index) => [a, bs[index]]);
   }
+}
+
+export function resMaybe<T>(res: Response, maybe: Maybe<T>): void {
+  if (isNothing(maybe)) {
+    res.sendStatus(404);
+    return;
+  }
+  res.json(maybe.value);
+}
+
+export function resEither<T, Q>(res: Response, either: Either<T, Q>, fail_code: number): void {
+  if (isLeft(either)) {
+    res.sendStatus(fail_code);
+    return;
+  }
+  res.json(either.value);
 }

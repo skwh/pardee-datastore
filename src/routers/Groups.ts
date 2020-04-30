@@ -7,11 +7,17 @@ import { Maybe, findMaybe, isNothing } from '../lib/Maybe';
 import { AppOptions, AppDependencies } from '../models/ApplicationData';
 import { make_response, Response_Category } from '../api';
 import { has_prop } from '../utils';
-import { Query, QueryFactory } from '../db/query';
+import { QueryParser } from '../db/Query.parser';
 import { Group } from '../models/Group.model';
 import { Series } from '../models/Series.model';
-import { find_object_in_label_list } from '../settings/parse.old';
-import { Column_Label_Values } from '../models/ColumnValues.enum';
+import { Column_Label_Values, LabelList } from '../models/ColumnValues.enum';
+import { isLeft } from '../lib/Either';
+import { SqlQueryTransformer } from '../db/Query.to.Sql';
+import { ColumnNameMap } from '../models/ColumnNameMap.model';
+
+function find_object_in_label_list(labelType: Column_Label_Values, list: LabelList, alias: string): Maybe<ColumnNameMap> {
+  return findMaybe(list[labelType], o => o.alias === alias);
+}
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export function GroupsRouter(dependencies: AppDependencies, options: AppOptions) {
@@ -211,12 +217,15 @@ export function GroupsRouter(dependencies: AppDependencies, options: AppOptions)
     const { download } = req.query;
     const series_table_name = req.series.table_name;
 
-    const query_builder = new QueryFactory(series_table_name, req.series.type, req.body as Query);
+    const parsed_query = QueryParser(req.query);
 
-    const QUERY = query_builder.query_to_sql();
-    if (!QUERY) {
-      res.sendStatus(400);
+    if (isLeft(parsed_query)) {
+      res.status(400).send(parsed_query.value.message);
+      return;
     }
+
+    const QUERY = SqlQueryTransformer(parsed_query.value, series_table_name);
+    
     console.debug('performing query: ', QUERY);
 
     const { rows } = await database.query(QUERY);
