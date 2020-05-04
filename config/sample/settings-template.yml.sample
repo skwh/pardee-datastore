@@ -25,9 +25,10 @@ template:
   dataseries:
     name: "{Variable}"
     category: "{Group}"
-    groupName: "{Country}"
+    group: "{Country}"
+    type: "monadic"
     location: "./data/{Country}/{Country}_{Variable}.csv"
-    description: "{Definition}"
-    unit: "{Units}"
-    other:
+    metadata:
+      description: "{Definition}"
+      unit: "{Units}"
       source: "{Source}"

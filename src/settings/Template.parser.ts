@@ -11,6 +11,8 @@ import { Series } from '../models/Series.model';
 import { DataseriesParser } from './Dataseries.parser';
 import { UnsafeSeries } from '../models/unsafe/Unsafe.model';
 
+type CSV = Record<string, string>[];
+
 function unsafeIsSafe(template: Partial<Template>): template is Template {
   return template.path !== undefined 
       && template.columns !== undefined
@@ -69,7 +71,9 @@ function handlebars_replace(vars: Record<string, string>,
     if (has_prop(vars, stripped_string)) {
       final = final.replace(matched_string, vars[stripped_string]);
     } else {
-      return Left(new ParseError(`Encountered unknown variable "${matched_string}" when parsing dataseries template.`));
+      return Left(
+        new ParseError(
+          `Encountered unknown variable "${matched_string}" when parsing dataseries template.`));
     }
   }
 
@@ -115,27 +119,30 @@ export async function TemplateParser(template: Partial<Template>,
   template.path = absolute_template_path;
 
   if (!location_exists(template.path)) {
-    return Left(new ParseError(`Template file ${template.path} does not exist.`));
+    return Left(
+      new ParseError(`Template file ${template.path} does not exist.`));
   }
 
-  const template_values = await load_csv(template.path) as Record<string, string>[];
+  const template_values = await load_csv(template.path) as CSV;
   if (template_values.length == 0) {
-    return Left(new ParseError(`Template file ${template.path} is empty or malformatted.`));
+    return Left(
+      new ParseError(
+        `Template file ${template.path} is empty or malformatted.`));
   }
 
   if (!csv_columns_match_given(template_values, template.columns)) {
-    return Left(new ParseError(`Columns in template section do not match columns in template file.`));
+    return Left(
+      new ParseError(
+        `Columns in template section do not match columns in template file.`));
   }
 
   const unsafe_series: UnsafeSeries[] = [];
 
   for (const template_row of template_values) {
-    const row_variables_map = Object.fromEntries(
-                    zip(template.columns, 
-                        Object.values(template_row))) as Record<string, string>;
-    const partial_series: Partial<TemplateSeries> = Object.assign({}, 
-                                                           template.dataseries);
-
+    const enr = zip(template.columns, Object.values(template_row));
+    const row_variables_map = Object.fromEntries(enr) as Record<string, string>;
+    const partial_series: Partial<TemplateSeries> = JSON.parse(
+                                           JSON.stringify(template.dataseries));
     const parsed_template = handlebars_replace_recursive(row_variables_map, 
                                                                 partial_series);
     if (isLeft(parsed_template)) {

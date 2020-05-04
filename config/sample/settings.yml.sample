@@ -18,13 +18,16 @@ groups:
     dataseries:
     - name: Crop Production
       category: Agricultural
+      type: dyadic
       location: ${PATH_TO_DATA_FOLDER}/SeriesAGCropProductionFAO.csv
-      units: Tonnes
+      metadata:
+        units: Tonnes
     - name: Cereals Export
       category: Agricultural
+      type: monadic
       location: ${PATH_TO_DATA_FOLDER}/SeriesAGCerealsEx.csv
-      units: Millions of Tonnes
-      slug: CerealsEx
+      metadata:
+        units: Millions of Tonnes
   - name: Uganda
     anchor: Uganda
     dataseries:

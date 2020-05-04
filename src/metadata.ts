@@ -120,7 +120,8 @@ export class MetadataLoader {
       // If it does, only delete and recreate it if the clear_old flag is active.
       if (this.loadFlags.clear_old) {
         await this.database.drop_table(series.table_name);
-        await this.database.make_table(series.table_name, this.settings.columns);
+        await this.database.make_table(series.table_name, 
+                                       this.settings.columns);
         return true;
       }
     }
@@ -148,20 +149,28 @@ export class MetadataLoader {
                                              group: ParsedGroup): 
                                              Promise<Group> {
     const full_group = transform_to_group(group);
+
     for (const { alias } of this.settings.labels.key) {
-      const domain_values = await this.database.get_domain_values(series.table_name, alias);
+      const domain_values = await this.database
+                                   .get_domain_values(series.table_name, alias);
       full_group.combined_key_values.push(...domain_values);
-      full_group.domain_keys[alias] = remove_name_map_duplicates(column_values_to_name_maps(domain_values));
+      full_group.domain_keys[alias] = remove_name_map_duplicates(
+                                     column_values_to_name_maps(domain_values));
+      
+      console.info(
+        `Loaded domain key values for key ${alias} for group ${full_group.name}`);
     }
 
     for (const { alias } of this.settings.labels.cokey) {
-      const cokey_values = await this.database.get_domain_values(series.table_name, alias);
+      const cokey_values = await this.database
+                                   .get_domain_values(series.table_name, alias);
       full_group.combined_key_values.push(...cokey_values);
-      full_group.codomain_keys[alias] = remove_name_map_duplicates(column_values_to_name_maps(cokey_values));
+      full_group.codomain_keys[alias] = remove_name_map_duplicates(
+                                      column_values_to_name_maps(cokey_values));
+
+      console.info(
+        `Loaded codomain key values for key ${alias} for group ${full_group.name}`);
     }
-
-    
-
     return full_group;
   }
 
@@ -172,8 +181,8 @@ export class MetadataLoader {
 
       const series_file_location = current_series.location;
 
-      const domain_key_columns = retrieve_labeled_columns(this.settings.columns, 
-                                                       Column_Label_Values.key);
+      const domain_key_columns = retrieve_labeled_columns(this.settings.columns
+                                                     , Column_Label_Values.key);
       const domain_cokey_columns = retrieve_labeled_columns(
                                                     this.settings.columns,
                                                     Column_Label_Values.cokey);
@@ -185,8 +194,11 @@ export class MetadataLoader {
         continue;
       }
 
-      const table_action_performed = await this.make_or_recreate_table(current_series);
-      const index_action_performed = await this.make_or_recreate_index(current_series, index_columns);
+      const table_action_performed = await this.make_or_recreate_table(
+                                                                current_series);
+      const index_action_performed = await this.make_or_recreate_index(
+                                                                current_series, 
+                                                                index_columns);
 
       // if the table was created, or re-created, re-load the csv.
       if (table_action_performed) {
@@ -198,9 +210,11 @@ export class MetadataLoader {
         console.info(`Created index for table ${current_series.table_name}`);
       }
 
-      // Only load domain & co- keys from the first table examined in the group.
-      if (index == 0) {
-        full_group = Just(await this.get_domain_values_from_table(current_series, group));
+      // Only load domain & co- keys from the last table examined in the group.
+      if (index == group.dataseries.length - 1) {
+        full_group = Just(await this.get_domain_values_from_table(
+                                                                current_series, 
+                                                                group));
         console.info(`Loaded key and cokey values for group ${group.name}`);
       }
 

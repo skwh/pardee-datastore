@@ -14,6 +14,7 @@ interface SafeSeries {
   group: string;
 
   metadata?: Record<string, string>;
+  category?: string;
 }
 
 function make_table_name(series: SafeSeries): string {
@@ -68,7 +69,8 @@ export function DataseriesParser(unsafe_series: UnsafeSeries[],
       type: series.type,
       table_name: table_name,
 
-      metadata: series.metadata
+      metadata: series.metadata,
+      category: series.category
     };
 
     series_list.push(parsed_series);
