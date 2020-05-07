@@ -170,7 +170,6 @@ export function GroupsRouter(dependencies: AppDependencies,
                     async (req, res) => {
     const { download } = req.query;
     
-    // Series is injected by the param method above
     const series_table_name = req.series.table_name;
 
     const { rows } = await database.query(`SELECT * FROM ${series_table_name}`);

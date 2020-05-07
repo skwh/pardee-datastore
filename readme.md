@@ -74,14 +74,15 @@ Each `group` should have at least a name and a list of the dataseries which it c
 
 Each dataseries object must have the following attributes:
 - `name`: The name of the data series.
+- `type`: "monadic" or "dyadic"
 - `location`: A path to the csv file which corresponds with this data series.
 
 It is recommended that the data files be contained within the `config` folder, perhaps in a subfolder called `data`. The subfolders can be organized however you want, as long as the `location` attributes point to those files.
 
 Each dataseries object may have the following attributes:
 - `category`: Group dataseries together by providing them with the same category. Case sensitive!
-- `units`: Units for the measurements in this data series.
 - `slug`: A machine-friendly way of referring to the data series. If not provided, this is generated from the data series' name. 
+- `metadata`: Any other information about the dataseries that you might want to expose over the HTTP API via `/info` (see "Generated API Outline" below).
 
 #### Examples:
 ```YML
@@ -90,9 +91,12 @@ group:
   dataseries:
   - name: Church Group Birth Years
     location: ./data/church_group.csv
+    type: monadic
     category: People
-    units: number of people
     slug: ChurchGroup-BY
+    metadata:
+      units: number of people
+      author: Shelly Sanderson
 ```
 
 If the example data series above did not have the `slug` attribute, the generated "slug" (machine-friendly label) would be `church-group-birth-years`. 
@@ -106,7 +110,7 @@ The `columns` section is a list of objects. Each object corresponds to a column 
 Each column object must have the following attributes:
 - `name`: The name of the column
 - `type`: The datatype for values contained in that column. Possible values are `string` and `number`. 
-- `label`: One of three labels, which helps the application understand how the data is structured. Possible values are `key`, `range`, and `special`.
+- `label`: One of three labels, which helps the application understand how the data is structured. Possible values are `key`, `cokey`, `range`, and `special`.
 
 Each column object may have the following attributes:
 - `modifier`: A flag that the program should parse this column differently. Possible values currently only include `many`.
@@ -120,7 +124,7 @@ columns:
 
 - name: UserID
   type: number
-  label: key
+  label: cokey
 
 - name: EmailAddress
   type: string
@@ -154,7 +158,7 @@ A secondary csv file should be created with the relevant information on all of t
 
 The `template` section requires a `path` be provided to this secondary csv file. It then needs a list of the column names present in the csv file. The administrator can use these column names like variables, filling in any aspect of a dataset with the value from any given column. The application will then read the secondary file and perform this replacement, registering each dataset as it is created.
 
-The last required aspect of the `template` section is a `dataseries` entry, where each value may use a column name as a variable in "handlebars" syntax. If the name of a column is "Variable", then the handlebars syntax would be "{Variable}". This tells the application what to replace with the corresponding value in the secondary file table.
+The last required aspect of the `template` section is a `dataseries` entry, where each value may use a column name as a variable in "handlebars" syntax. If the name of a column is "Variable", then the handlebars syntax would be "{Variable}". This tells the application what to replace with the corresponding value in the secondary file table. Each handlebars entry in the `dataseries` object must be surrounded with double quotes ("). These entries can contain a mix of handlebars variables and hardcoded text, as in the `location` field in the example below. 
 
 #### An example:
 
@@ -164,20 +168,19 @@ template:
   columns:
     - FirstName
     - LastName
-    - FileUrl
+    - UserId
     - Group
   dataseries:
     name: "{FirstName} {LastName}"
-    groupName: "{Group}"
-    location: "{FileUrl}"
+    group: "{Group}"
+    location: "./data/{UserId}.csv"
 ```
-
 
 ### Full Example
 
-An example `settings.yml` file can be found in the `config/sample` folder of this repository. 
+An example `settings.yml.sample` file can be found in the `config/sample` folder of this repository. 
 
-An example which uses the `template` format is avaliable as `settings-template.yml`. 
+An example which uses the `template` format is avaliable as `settings-template.yml.sample`. 
 
 ## The Generated API Outline
 
@@ -215,7 +218,10 @@ Where `shape_category` is one of `range`, `special`, `key`, `cokey`, `anchor`, `
 
 Query endpoints are used to examine the data itself.
 - `GET /groups/:group/dataseries/values`: Returns the names of all avaliable data series, as specified in the `settings.yml` file. 
+- `GET /groups/:group/dataseries/:series`: Selects all values from the series table and returns them as CSV or JSON. 
 - `POST /groups/:group/dataseries/:series/query`: Perform a query against the data series called `:series` (url parameter variable). See the next section for how to perform a query.
+
+In order to recieve CSV or JSON formatting, you must send the correct `Accepts` header with your request. For csv, use the MIME type `text/csv`. JSON is the default. If you use a web browser with any of these query endpoints, you are likely to recieve the CSV format, since most web browsers use the `Accepts: text/*` header. 
 
 ### The Query Format
 
