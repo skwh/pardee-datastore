@@ -1,6 +1,6 @@
 import Router from 'express-promise-router';
 import generator from 'json-2-csv';
-import express from 'express';
+import express, { RequestHandler } from 'express';
 
 import { Maybe, findMaybe, isNothing } from '../lib/Maybe';
 
@@ -22,9 +22,8 @@ function find_object_in_label_list(labelType: Column_Label_Values,
   return findMaybe(list[labelType], o => o.alias === alias);
 }
 
-// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export function GroupsRouter(dependencies: AppDependencies,
-                             options: AppOptions) {
+                             options: AppOptions): RequestHandler {
   const { config, corsOptions, database } = options;
   const { cors } = dependencies;
   const cors_with_options = cors(corsOptions);
@@ -279,5 +278,4 @@ export function GroupsRouter(dependencies: AppDependencies,
   });
 
   return groups_router;
-
 }

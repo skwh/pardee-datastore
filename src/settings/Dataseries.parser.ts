@@ -1,11 +1,12 @@
 import path from 'path';
 
-import { Either, Left, Right } from '../lib/Either';
+import { Either, Left, Right, isLeft } from '../lib/Either';
 
 import { UnsafeSeries } from '../models/unsafe/Unsafe.model';
 import { ParseError } from '../models/error/Parse.error';
 import { Series } from '../models/Series.model';
 import { sanitize_name, location_exists } from '../utils';
+import { restrict_santize_name } from './Parser.utils';
 
 interface SafeSeries {
   name: string;
@@ -46,24 +47,38 @@ export function DataseriesParser(unsafe_series: UnsafeSeries[],
       series.group = group_name;
     }
     if (!unsafeIsSafe(series)) {
-      return Left(ParseError.MissingParamsError(series, 'dataseries', ['name', 'location', 'type', 'group']));
+      return Left(
+        ParseError.MissingParamsError(series, 
+                                      'dataseries', 
+                                      ['name', 'location', 'type', 'group']));
     }
 
-    const absolute_series_location = path.join(absolute_application_path, series.location);
+    const absolute_series_location = path.join(absolute_application_path,
+                                               series.location);
     series.location = absolute_series_location;
 
     if (!location_exists(series.location)) {
-      return Left(new ParseError(`Dataseries ${series.name} location ${series.location} does not exist.`));
+      return Left(
+        new ParseError(
+          `Dataseries ${series.name} location ${series.location} does not exist.`));
     }
 
     if (!parse_series_type(series.type)) {
-      return Left(new ParseError(`Dataseries ${series.name} type ${series.type} is not valid. Valid values are 'monadic' and 'dyadic'.`));
+      return Left(
+        new ParseError(
+          `Dataseries ${series.name} type ${series.type} is not valid. Valid values are 'monadic' and 'dyadic'.`));
+    }
+
+    // Series may not have certian names
+    const sanitized_name = restrict_santize_name(series.name);
+    if (isLeft(sanitized_name)) {
+      return sanitized_name;
     }
 
     const table_name = make_table_name(series);
 
     const parsed_series: Series = {
-      name: sanitize_name(series.name),
+      name: sanitized_name.value,
       group: series.group,
       location: series.location,
       type: series.type,
