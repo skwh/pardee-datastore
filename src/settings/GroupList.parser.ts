@@ -35,7 +35,7 @@ export function GroupListParser(unsafe_groups: UnsafeGroup[],
       return parsed_series;
     }
 
-    const sanitized_name = restrict_santize_name(group.name);
+    const sanitized_name = restrict_santize_name(group.name, 'Group');
     if (isLeft(sanitized_name)) {
       return sanitized_name;
     }

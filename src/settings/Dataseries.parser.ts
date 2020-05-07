@@ -70,7 +70,7 @@ export function DataseriesParser(unsafe_series: UnsafeSeries[],
     }
 
     // Series may not have certian names
-    const sanitized_name = restrict_santize_name(series.name);
+    const sanitized_name = restrict_santize_name(series.name, 'Dataseries');
     if (isLeft(sanitized_name)) {
       return sanitized_name;
     }
