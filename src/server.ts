@@ -1,4 +1,5 @@
 import express, { Request, Response, RequestHandler } from 'express';
+import compression from 'compression';
 
 import { AppDependencies, AppOptions } from './models/ApplicationData';
 import { GroupsRouter } from './routers/Groups.router';
@@ -11,6 +12,7 @@ export const Server = function(deps: AppDependencies, options: AppOptions) {
 
   const server = express();
   server.use(helmet());
+  server.use(compression());
   server.use(options.httpLogger);
 
   const cors_with_options = cors(options.corsOptions);
