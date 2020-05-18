@@ -54,7 +54,7 @@ Any given table (in a csv file) can have different types of columns:
 1. **Key**: a key column is a column containing values that an end user might want to search against. The value in this column can act as a "primary key" in the sense of databases.
 2. **Cokey**: a cokey column is a column containing the same values as a key column, but is used for dyadic datasets, where a pair of domain values form a unique entry in the data.
 3. **Range**: a range column is a column containing a value associated with a key measured over a specific range. For timeseries data, different columns corresponding to different points in time would be represented as range columns.
-4. **Anchor**: a column which contains the same value for every row in the dataset.
+4. **Anchor**: a column which contains the same value for every row in the dataset. These columns are not exposed via api.
 5. **Special**: a special column is any column which does not fit the definitions of any other type of column, above.
 
 The program then generates endpoints which allow for an end user or another application to determine the shape of the data and query against it. Querying is discussed in more detail below. 
@@ -72,14 +72,14 @@ Each object corresponds to a group of series of data, each of which is represent
 
 Each `group` should have at least a name and a list of the dataseries which it contains.
 
-Each dataseries object must have the following attributes:
+Each dataseries object **must** have the following attributes:
 - `name`: The name of the data series.
 - `type`: "monadic" or "dyadic"
 - `location`: A path to the csv file which corresponds with this data series.
 
 It is recommended that the data files be contained within the `config` folder, perhaps in a subfolder called `data`. The subfolders can be organized however you want, as long as the `location` attributes point to those files.
 
-Each dataseries object may have the following attributes:
+Each dataseries object **may** have the following attributes:
 - `category`: Group dataseries together by providing them with the same category. Case sensitive!
 - `slug`: A machine-friendly way of referring to the data series. If not provided, this is generated from the data series' name. 
 - `metadata`: Any other information about the dataseries that you might want to expose over the HTTP API via `/info` (see "Generated API Outline" below).
@@ -110,7 +110,7 @@ The `columns` section is a list of objects. Each object corresponds to a column 
 Each column object must have the following attributes:
 - `name`: The name of the column
 - `type`: The datatype for values contained in that column. Possible values are `string` and `number`. 
-- `label`: One of three labels, which helps the application understand how the data is structured. Possible values are `key`, `cokey`, `range`, and `special`.
+- `label`: A label which helps the application understand how the data is structured. Possible values are `key`, `cokey`, `range`, `anchor`, and `special`. This is discussed above in **Data Model**.
 
 Each column object may have the following attributes:
 - `modifier`: A flag that the program should parse this column differently. Possible values currently only include `many`.
@@ -176,6 +176,13 @@ template:
     location: "./data/{UserId}.csv"
 ```
 
+### Categories
+
+Dataseries can further be grouped into Categories, which are a separate way of
+grouping from "groups." Dataseries can be assigned a category through the yaml
+specification via the "category" keyword. The same applies for the template
+section. If categories are specified in the settings, they will be reflected in the API.
+
 ### Full Example
 
 An example `settings.yml.sample` file can be found in the `config/sample` folder of this repository. 
@@ -193,15 +200,17 @@ There are two categories of endpoints: endpoints to determine what columns are a
 The shape endpoints are as follows:
 - `GET /keys`: Returns all column names labeled "key"
 - `GET /group/:group/key/:key/values`: Returns all the values in the column labeled `:key` (url parameter variable)
+- `GET /group/:group/cokey/:cokey/values`: Returns all the cokey values in the column labeled `:key` (dyadic series only)
 - `GET /range/values`: Returns all the columns labeled "range"
 - `GET /special/values`: Returns all the columns labeled "special"
-- `GET /group/:group/dataseries/:series/info`: Returns metadata about the dataseries, provided by the administrator.
-- `GET /categories/values`: Returns the different categories which data is sorted into (provided by administrator).
-- `GET /categories/:category/dataseries`: Returns the dataseries which belong to a given category.
+- `GET /group/:group/dataseries/:series/info`: Returns metadata about the dataseries, provided by the administrator
+- `GET /groups/:group/dataseries/values`: Returns the names of all avaliable data series, as specified in the `settings.yml` file. 
+- `GET /categories/values`: Returns the different categories which data is sorted into
+- `GET /categories/:category/dataseries`: Returns the dataseries which belong to a given category
 
 #### Response
 
-All shape endpoints follow a similar response pattern. Any value returned from a shape endpoint is the name of a column, and some column names may have been altered to be machine friendly. 
+All shape endpoints follow a similar response pattern. A majority of the values returned from a shape endpoint are the names of a column, and some column names may have been altered to be machine friendly. 
 
 So the response pattern is as follows:
 
@@ -217,11 +226,10 @@ Where `shape_category` is one of `range`, `special`, `key`, `cokey`, `anchor`, `
 ### Query Endpoints
 
 Query endpoints are used to examine the data itself.
-- `GET /groups/:group/dataseries/values`: Returns the names of all avaliable data series, as specified in the `settings.yml` file. 
 - `GET /groups/:group/dataseries/:series`: Selects all values from the series table and returns them as CSV or JSON. 
 - `POST /groups/:group/dataseries/:series/query`: Perform a query against the data series called `:series` (url parameter variable). See the next section for how to perform a query.
 
-In order to recieve CSV or JSON formatting, you must send the correct `Accepts` header with your request. For csv, use the MIME type `text/csv`. JSON is the default. If you use a web browser with any of these query endpoints, you are likely to recieve the CSV format, since most web browsers use the `Accepts: text/*` header. 
+In order to recieve CSV or JSON formatting, you must send the correct `Accepts` header with your request. For csv, use the MIME type `text/csv`. JSON is the default, but can be specified with the MIME type "application/json". If you use a web browser with any of these query endpoints, you are likely to recieve the CSV format, since most web browsers use the `Accepts: text/*` header. 
 
 ### The Query Format
 
@@ -370,8 +378,3 @@ volumes:
     target: /var/www/view/dist
 ```
 
-# Developer Notes
-
-I add this section for anyone who comes along and needs to work with this application, modify it, or study it.
-
-Don't ask about the 80 column width thing.
