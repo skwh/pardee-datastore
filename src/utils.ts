@@ -15,6 +15,8 @@ export function anyOf<T>(predicate: ((x: T) => boolean), xs: T[]): boolean {
   return false;
 }
 
+// If the range is improperly ordered, it is expected behavior that the result
+//   will only contain one element.
 export function range_spread(spread: string): number[] {
   const nums = spread.split('..').map(str => parseInt(str, 10));
   if (nums.length != 2 || anyOf(isNaN, nums)) {
@@ -31,7 +33,8 @@ export function range_spread(spread: string): number[] {
 
 export function maybe_range_spread(spread: string): Maybe<number[]> {
   try {
-    return Just(range_spread(spread));
+    const parsed_spread = range_spread(spread);
+    return Just(parsed_spread);
   } catch (e) {
     return Nothing;
   }

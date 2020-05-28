@@ -22,11 +22,14 @@ export function modify_column_name(name: string): string {
   return name;
 }
 
-function parse_label(column: SafeColumn): Either<ParseError, Column_Label_Values> {
+function parse_label(column: SafeColumn): 
+                                       Either<ParseError, Column_Label_Values> {
   if (column.label in Column_Label_Values) {
     return Right(column.label as Column_Label_Values);
   }
-  return Left(new ParseError(`${column.label} is not a valid label for column ${column.name}`));
+  return Left(
+    new ParseError(
+      `${column.label} is not a valid label for column ${column.name}`));
 }
 
 function parse_column(column: SafeColumn): Either<ParseError, ParsedColumn> {
@@ -37,8 +40,8 @@ function parse_column(column: SafeColumn): Either<ParseError, ParsedColumn> {
   }
   return Right ({
     nameMap: {
+      alias: modify_column_name(name),
       original: column.name,
-      alias: name
     },
     type: make_postgres_type(column.type),
     label: label.value
@@ -65,17 +68,23 @@ function unsafeIsSafe(unsafe: UnsafeColumn): unsafe is SafeColumn {
       && unsafe.type !== undefined;
 }
 
-export function ColumnParser(unsafe_columns: UnsafeColumn[]): Either<ParseError, ParsedColumn[]> {
+export function ColumnParser(unsafe_columns: UnsafeColumn[]): 
+                                            Either<ParseError, ParsedColumn[]> {
   const columns: ParsedColumn[] = [];
   for (const column of unsafe_columns) {
     if (!unsafeIsSafe(column)) {
-      return Left(ParseError.MissingParamsError(column, 'column', ['name', 'label', 'type']));
+      return Left(
+        ParseError.MissingParamsError(column, 
+                                      'column', 
+                                      ['name', 'label', 'type']));
     }
     
     if (has_prop(column, 'modifier') && column.modifier === 'many') {
       const new_columns = parse_column_from_spread(column);
       if (isNothing(new_columns)) {
-        return Left(new ParseError(`This range spread is improperly formatted: ${column.name}`));
+        return Left(
+          new ParseError(
+            `This range spread is improperly formatted: ${column.name}`));
       }
 
       columns.push(...new_columns.value);

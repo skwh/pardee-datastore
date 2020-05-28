@@ -5,11 +5,13 @@ import { Either, Right, Left } from '../lib/Either';
 import { ColumnNameMap } from '../models/ColumnNameMap.model';
 import { has_all_props } from '../utils';
 
-function labelsIsLabelList(labels: Record<string, ColumnNameMap[]>): labels is LabelList {
+function labelsIsLabelList(labels: Record<string, ColumnNameMap[]>): 
+                                                          labels is LabelList {
   return has_all_props(labels, Object.keys(Column_Label_Values));
 }
 
-export function LabelParser(columns: ParsedColumn[]): Either<ParseError, LabelList> {
+export function LabelParser(columns: ParsedColumn[]): 
+                                                Either<ParseError, LabelList> {
   const labels: Record<string, ColumnNameMap[]> = {};
   for (const key in Column_Label_Values) {
     labels[key] = [];
@@ -21,7 +23,10 @@ export function LabelParser(columns: ParsedColumn[]): Either<ParseError, LabelLi
   }
 
   if (!labelsIsLabelList(labels)) {
-    return Left(ParseError.MissingParamsError(labels, 'labels', Object.keys(Column_Label_Values)));
+    return Left(
+      ParseError.MissingParamsError(labels, 
+                                    'labels', 
+                                    Object.keys(Column_Label_Values)));
   }
 
   return Right(labels);
