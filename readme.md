@@ -378,3 +378,31 @@ volumes:
     target: /var/www/view/dist
 ```
 
+## Starting Up the DataStore
+
+First of all, you should be using Docker. Use a `docker-compose` file to create
+two services: the DataStore and the Postgres database. In the same folder as
+your `docker-compose` file, create a `config` folder, which will hold
+`settings.yml` and your data. In `docker-compose`, volume bind the config folder to a
+volume at `/var/www/config`. Also provide the necessary environment variables
+through the `environment` section of `docker-compose`.
+
+**Make sure that the database container also has a volume binding to the config folder.**
+
+If you have static files to be served, make sure they are also bound to a volume
+in the DataStore container, one which matches the path specified in the
+`SERVE_STATIC` environment variable.
+
+Then use `docker-compose up` to start the application. Do port mapping in the
+`docker-compose` as you need.
+
+### Operational Output
+
+The DataStore provides a log for activity once the container has been started. A
+normal startup will show messages for series being loaded, database indicies
+being created (or re-created), and messages for domain keys being loaded. If the
+application is running properly, the last message of startup should be "Server
+running."
+
+The DataStore will then log any HTTP requests it recieves, including the IP of
+the request, a response code, and the request path. 
