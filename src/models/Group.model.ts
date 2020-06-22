@@ -1,5 +1,5 @@
-import { Series } from './Series.model';
-import { ColumnNameMap } from './ColumnNameMap.model';
+import { Series } from './Series.model'
+import { ColumnNameMap } from './ColumnNameMap.model'
 
 export interface Group {
   name: string;

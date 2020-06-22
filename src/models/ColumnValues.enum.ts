@@ -1,4 +1,4 @@
-import { ColumnNameMap } from './ColumnNameMap.model';
+import { ColumnNameMap } from './ColumnNameMap.model'
 
 /**
  * KEY : this column makes up the "domain" of the dataset. It is a value that a user

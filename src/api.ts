@@ -1,4 +1,4 @@
-import { ColumnNameMap } from './models/ColumnNameMap.model';
+import { ColumnNameMap } from './models/ColumnNameMap.model'
 
 export enum Response_Category {
   Keys = 'keys',
@@ -24,19 +24,19 @@ export function make_response(category: Response_Category,
 export function make_response(category: Response_Category, 
                               values: any): 
                               Response {
-  const res: Response = {};
+  const res: Response = {}
   // Typescript function overloading: test type of element in values
   if (typeof values[0] === 'string') {
     res[category] = values.map((v: string) => {
       return {
         alias: v,
         original: v
-      };
-    });
+      }
+    })
   } else if (typeof values[0] === 'object') {
-    res[category] = values;
+    res[category] = values
   }
   
-  return res;
+  return res
 }
 

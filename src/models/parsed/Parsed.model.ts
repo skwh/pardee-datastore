@@ -1,7 +1,7 @@
-import { ColumnNameMap } from '../ColumnNameMap.model';
-import { Postgres_Type } from '../../db/db';
-import { Column_Label_Values, LabelList } from '../ColumnValues.enum';
-import { Series } from '../Series.model';
+import { ColumnNameMap } from '../ColumnNameMap.model'
+import { Postgres_Type } from '../../db/db'
+import { Column_Label_Values, LabelList } from '../ColumnValues.enum'
+import { Series } from '../Series.model'
 
 /**
  * How a column appears to the program after the settings file has been parsed.

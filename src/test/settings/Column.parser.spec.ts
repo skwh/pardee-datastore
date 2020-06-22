@@ -1,14 +1,14 @@
-import { assert } from 'chai';
-import 'mocha';
+import { assert } from 'chai'
+import 'mocha'
 
-import { isLeft, isRight } from '../../lib/Either';
+import { isLeft, isRight } from '../../lib/Either'
 
-import { ColumnParser } from '../../settings/Column.parser';
-import { UnsafeColumn } from '../../models/unsafe/Unsafe.model';
-import { ParseError } from '../../models/error/Parse.error';
+import { ColumnParser } from '../../settings/Column.parser'
+import { UnsafeColumn } from '../../models/unsafe/Unsafe.model'
+import { ParseError } from '../../models/error/Parse.error'
 
 const isMissingParamsError = 
-  (e: ParseError): boolean => e.message.includes('is missing param(s)');
+  (e: ParseError): boolean => e.message.includes('is missing param(s)')
 
 describe('Column Parser', () => {
   
@@ -21,16 +21,16 @@ describe('Column Parser', () => {
           type: 'string'
           // missing 'label'
         }
-      ];
+      ]
 
-      const actual_result = ColumnParser(input);
+      const actual_result = ColumnParser(input)
       if (isRight(actual_result)) {
-        assert.fail('Column Parser parsed a column without a label!');
+        assert.fail('Column Parser parsed a column without a label!')
       }
-      assert.isTrue(isLeft(actual_result));
-      assert.isTrue(isMissingParamsError(actual_result.value));
+      assert.isTrue(isLeft(actual_result))
+      assert.isTrue(isMissingParamsError(actual_result.value))
       
-    });
+    })
 
     it('should ensure that each column has a name', () => {
       const input: UnsafeColumn[] = [
@@ -39,15 +39,15 @@ describe('Column Parser', () => {
           type: 'string'
           // missing 'name'
         }
-      ];
+      ]
 
-      const actual_result = ColumnParser(input);
+      const actual_result = ColumnParser(input)
       if (isRight(actual_result)) {
-        assert.fail('Column Parser parsed a column without a name!');
+        assert.fail('Column Parser parsed a column without a name!')
       }
-      assert.isTrue(isLeft(actual_result));
-      assert.isTrue(isMissingParamsError(actual_result.value));
-    });
+      assert.isTrue(isLeft(actual_result))
+      assert.isTrue(isMissingParamsError(actual_result.value))
+    })
 
     it('should ensure that each column has a type', () => {
       const input: UnsafeColumn[] = [
@@ -56,17 +56,17 @@ describe('Column Parser', () => {
           label: 'range'
           // missing 'type'
         }
-      ];
+      ]
 
-      const actual_result = ColumnParser(input);
+      const actual_result = ColumnParser(input)
       if (isRight(actual_result)) {
-        assert.fail('Column Parser parsed a column without a type!');
+        assert.fail('Column Parser parsed a column without a type!')
       }
-      assert.isTrue(isLeft(actual_result));
-      assert.isTrue(isMissingParamsError(actual_result.value));
-    });
+      assert.isTrue(isLeft(actual_result))
+      assert.isTrue(isMissingParamsError(actual_result.value))
+    })
 
-  });
+  })
   
 
   it('should catch an improperly formatted spread', () => {
@@ -77,16 +77,16 @@ describe('Column Parser', () => {
         type: 'number',
         modifier: 'many'
       }
-    ];
+    ]
 
-    const actual_result = ColumnParser(input);
+    const actual_result = ColumnParser(input)
     if (isRight(actual_result)) {
       assert.fail(
-          'Column Parser parsed a column with an improperly formatted spread!');
+          'Column Parser parsed a column with an improperly formatted spread!')
     }
-    assert.isTrue(isLeft(actual_result));
-    assert.isTrue(actual_result.value.message.includes('range spread'));
-  });
+    assert.isTrue(isLeft(actual_result))
+    assert.isTrue(actual_result.value.message.includes('range spread'))
+  })
 
   it('should catch an invalid label for a column', () => {
     const input: UnsafeColumn[] = [
@@ -95,16 +95,16 @@ describe('Column Parser', () => {
         type: 'string',
         label: 'bad'
       }
-    ];
+    ]
 
-    const actual_result = ColumnParser(input);
+    const actual_result = ColumnParser(input)
     if (isRight(actual_result)) {
       assert.fail(
-        'Column Parser parsed a column with an invalid label!');
+        'Column Parser parsed a column with an invalid label!')
     }
-    assert.isTrue(isLeft(actual_result));
-    assert.isTrue(actual_result.value.message.includes('valid label'));
-  });
+    assert.isTrue(isLeft(actual_result))
+    assert.isTrue(actual_result.value.message.includes('valid label'))
+  })
 
   it('should format a numeric column name', () => {
     const input: UnsafeColumn[] = [
@@ -113,16 +113,16 @@ describe('Column Parser', () => {
         type: 'number',
         label: 'range'
       }
-    ];
+    ]
 
-    const actual_result = ColumnParser(input);
+    const actual_result = ColumnParser(input)
     if (isLeft(actual_result)) {
       assert.fail(
-        'ColumnParser threw an error instead of parsing a valid column!');
+        'ColumnParser threw an error instead of parsing a valid column!')
     }
-    const safe_column = actual_result.value[0];
-    assert.equal(safe_column.nameMap.alias, 'n2005');
-  });
+    const safe_column = actual_result.value[0]
+    assert.equal(safe_column.nameMap.alias, 'n2005')
+  })
 
   it('should properly parse a numeric spread', () => {
     const input: UnsafeColumn[] = [
@@ -132,14 +132,14 @@ describe('Column Parser', () => {
         label: 'range',
         modifier: 'many'
       }
-    ];
+    ]
 
-    const actual_result = ColumnParser(input);
+    const actual_result = ColumnParser(input)
     if (isLeft(actual_result)) {
       assert.fail(
-        'ColumnParser threw an error instead of parsing a valid column!');
+        'ColumnParser threw an error instead of parsing a valid column!')
     }
-    const safe_columns = actual_result.value;
-    assert.equal(safe_columns.length, 3);
-  });
-});
+    const safe_columns = actual_result.value
+    assert.equal(safe_columns.length, 3)
+  })
+})

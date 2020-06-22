@@ -1,4 +1,4 @@
-import { TemplateSeries } from './TemplateSeries.model';
+import { TemplateSeries } from './TemplateSeries.model'
 
 export interface Template {
   path: string;

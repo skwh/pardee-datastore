@@ -1,10 +1,10 @@
-import { CorsOptions } from 'cors';
+import { CorsOptions } from 'cors'
 
-import { Database } from '../db/db';
-import { Category } from './Category.model';
-import { Group } from './Group.model';
-import { RequestHandler } from 'express';
-import { LabelList } from './ColumnValues.enum';
+import { Database } from '../db/db'
+import { Category } from './Category.model'
+import { Group } from './Group.model'
+import { RequestHandler } from 'express'
+import { LabelList } from './ColumnValues.enum'
 
 export interface ApplicationConfig {
   groups: Group[];

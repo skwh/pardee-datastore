@@ -15,7 +15,7 @@
   rules: {
     "@typescript-eslint/camelcase": "off",
     "quotes": ["error", "single", { "allowTemplateLiterals": true }],
-    "semi": ["error", "always"],
+    "semi": ["error", "never"],
     "max-len": ["warn", { 
       "code": 80,
       "ignoreTemplateLiterals": true,

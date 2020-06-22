@@ -1,4 +1,4 @@
-import { Template } from '../template/Template.model';
+import { Template } from '../template/Template.model'
 
 export interface UnsafeColumn {
   name?: string;
