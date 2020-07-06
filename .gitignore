@@ -10,5 +10,6 @@ test-data
 *.csv
 
 dist
+tmp
 
 tsconfig.tsbuildinfo

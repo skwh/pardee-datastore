@@ -25,7 +25,12 @@ function yamlIsRecord(yaml: unknown): yaml is Record<string, unknown> {
   return (typeof yaml === 'object')
 }
 
-export async function SettingsParser(yaml: unknown, absolute_application_path: string): Promise<Either<ParseError, ParsedSettingsData>> {
+export async function SettingsParser(yaml: unknown, 
+                                     absolute_application_path: string): 
+                                     Promise<
+                                          Either<
+                                              ParseError,
+                                              ParsedSettingsData>> {
   if (!yamlIsRecord(yaml)) {
     return Left(new ParseError(`Invalid format for settings.yml file.`))
   }

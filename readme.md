@@ -21,6 +21,7 @@ The application also has the following environment variables avaliable:
 - `CLEAR_OLD`: should the application attempt to drop old tables in the db associated with the application? usually used for development (`false` by default)
 - `ONLY_CLEAR`: with this flag set, the application only attempts to clear existing tables and table indexes, then quits. 
 - `NO_SERVE`: the application loads data to the database, outputs its application config object, and quits, without starting a web server. 
+- `CLEAR_CACHE`: the application clears its settings cache before attempting to load settings.
 
 The application is designed to be run alongside a Postgres database. Provide the application the parameters for the database with the following environment variables:
 - `PGUSER`
