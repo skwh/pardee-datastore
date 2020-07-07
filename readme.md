@@ -38,8 +38,38 @@ environment:
   - SERVE_STATIC=view/dist
   - CORS_ORIGIN=example.com
   - PGUSER=postgres
-  - PGHOST= ...(etc)
+  - PGHOST=...(etc)
 ```
+
+### Server-Assisted Client Side Caching with Redis
+
+When running an application which makes heavy use of the DataStore's HTTP endpoints, it may be worthwhile to cache the results of some requests. The datastore's http server can integrate middleware which performs this server-assisted caching. In order to use this feature, you must:
+
+1. Run an instance of a Redis store alongside the DataStore
+2. Provide connection details to the application through these environment variables: `REDIS_HOST`, `REDIS_PORT`, and `REDIS_PASS`. All of these variables must be specified in order for the middleware caching to be enabled. `REDIS_TTL` may also be specified, the default value is `1000`. 
+
+It is recommended that this be done through `docker-compose`:
+
+```YAML
+services:
+  ...
+  redis:
+    image: redis:6-alpine
+    ports:
+      - "6739"
+```
+
+Then, for the environment variables under the DataStore service:
+
+```YAML
+environment:
+  ...
+  REDIS_HOST=redis
+  REDIS_PORT=6739
+  REDIS_PASS=password
+```
+
+The value `'redis'` works for the hostname because `docker-compose` automatically associates service names with container networks. See [Docker: Networking in Compose](https://docs.docker.com/compose/networking/) for more details about that.
 
 ## Data Model
 

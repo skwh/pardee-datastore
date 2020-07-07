@@ -16,7 +16,7 @@ export interface ApplicationConfig {
 export interface RedisOptions {
   host: string;
   port: number;
-  // auth_pass: string;
+  auth_pass: string;
   db: number;
   ttl: number;
 }

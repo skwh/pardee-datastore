@@ -133,12 +133,12 @@ async function start_app(db: Database): Promise<void> {
     }
 
     let redis_options: RedisOptions | undefined = undefined
-    if (process.env.REDIS_HOST && process.env.REDIS_PORT /*&& process.env.REDIS_PASS*/) {
+    if (process.env.REDIS_HOST && process.env.REDIS_PORT && process.env.REDIS_PASS) {
       const ttl = process.env.REDIS_TTL ? parseInt(process.env.REDIS_TTL, 10) : 1000
       redis_options = {
         host: process.env.REDIS_HOST,
         port: parseInt(process.env.REDIS_PORT, 10),
-        // auth_pass: process.env.REDIS_PASS,
+        auth_pass: process.env.REDIS_PASS,
         db: 0,
         ttl: ttl
       }

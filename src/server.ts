@@ -31,7 +31,7 @@ export const Server = function(deps: AppDependencies, options: AppOptions) {
         store: RedisStore,
         host: options.redis.host,
         port: options.redis.port,
-        // auth_pass: options.redis.auth_pass,
+        auth_pass: options.redis.auth_pass,
         db: options.redis.db,
         ttl: options.redis.ttl
       })
