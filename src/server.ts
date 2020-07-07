@@ -1,5 +1,8 @@
 import express, { Request, Response, RequestHandler } from 'express'
 import compression from 'compression'
+import ExpressCache from 'express-cache-middleware'
+import CacheManager from 'cache-manager'
+import RedisStore from 'cache-manager-redis-store'
 
 import { AppDependencies, AppOptions } from './models/ApplicationData'
 import { GroupsRouter } from './routers/Groups.router'
@@ -20,6 +23,21 @@ export const Server = function(deps: AppDependencies, options: AppOptions) {
   if (options.serve_static_path) {
     console.info('Serving static content from', options.serve_static_path)
     server.use('/', express.static(options.serve_static_path))
+  }
+
+  if (options.redis) {
+    const cacheMiddleware = new ExpressCache(
+      CacheManager.caching({
+        store: RedisStore,
+        host: options.redis.host,
+        port: options.redis.port,
+        // auth_pass: options.redis.auth_pass,
+        db: options.redis.db,
+        ttl: options.redis.ttl
+      })
+    )
+    cacheMiddleware.attach(server)
+    console.info('Caching attached.')
   }
 
   server.get('/keys', cors_with_options, (_, res) => {

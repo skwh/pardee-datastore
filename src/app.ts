@@ -5,17 +5,16 @@ import path from 'path'
 import { Pool } from 'pg'
 
 import httpLogger from './lib/http-logger'
-import { isNothing, Nothing, Maybe, Just } from './lib/Maybe'
+import { isNothing } from './lib/Maybe'
 
 import { Database } from './db/db'
 import { MetadataLoader } from './metadata'
-import { AppDependencies, AppOptions, ApplicationConfig } from './models/ApplicationData'
+import { AppDependencies, AppOptions, ApplicationConfig, RedisOptions } from './models/ApplicationData'
 import { Server } from './server'
 import { load_yaml } from './utils'
 import { SettingsParser } from './settings/parser'
 import { isLeft } from './lib/Either'
 import { ConfigCache } from './settings/ConfigCache'
-import { Application } from 'express'
 
 const CONFIG_FOLDER = 'config'
 const CACHE_FOLDER = 'tmp'
@@ -113,7 +112,7 @@ async function start_app(db: Database): Promise<void> {
         throw cache_result.value
       } else {
         config = cache_result.value
-        console.info('Settings loaded from cache.')
+        console.info(`Settings loaded from cache file at ${cacheHandler.fullPath}`)
       }
     } else {
       console.info('No cache found, performing full metadata load.')
@@ -133,12 +132,25 @@ async function start_app(db: Database): Promise<void> {
       static_path = path.join(__dirname, '..', serve_static)
     }
 
+    let redis_options: RedisOptions | undefined = undefined
+    if (process.env.REDIS_HOST && process.env.REDIS_PORT /*&& process.env.REDIS_PASS*/) {
+      const ttl = process.env.REDIS_TTL ? parseInt(process.env.REDIS_TTL, 10) : 1000
+      redis_options = {
+        host: process.env.REDIS_HOST,
+        port: parseInt(process.env.REDIS_PORT, 10),
+        // auth_pass: process.env.REDIS_PASS,
+        db: 0,
+        ttl: ttl
+      }
+    }
+
     const appOptions: AppOptions = {
       database: db,
       corsOptions: corsOptions,
       serve_static_path: static_path,
       httpLogger: httpLogger,
-      config: applicationConfig
+      config: applicationConfig,
+      redis: redis_options
     }
 
     const app = Server(appDependencies, appOptions)

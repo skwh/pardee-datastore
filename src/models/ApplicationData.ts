@@ -13,6 +13,14 @@ export interface ApplicationConfig {
   categories?: Category[];
 }
 
+export interface RedisOptions {
+  host: string;
+  port: number;
+  // auth_pass: string;
+  db: number;
+  ttl: number;
+}
+
 type SlugifyOptions = string | 
    { replacement?: string; remove?: RegExp; lower?: boolean; strict?: boolean };
 
@@ -28,4 +36,5 @@ export interface AppOptions {
   httpLogger: RequestHandler;
   corsOptions: CorsOptions;
   config: ApplicationConfig;
+  redis?: RedisOptions;
 }

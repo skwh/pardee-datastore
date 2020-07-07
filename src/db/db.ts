@@ -75,7 +75,10 @@ export class Database {
   }
 
   async table_exists(table_name: string): Promise<boolean> {
-    const QUERY_TEXT = `SELECT to_regclass('${table_name}')`
+    const QUERY_TEXT = `SELECT EXISTS (
+                          SELECT FROM information_schema.tables
+                          WHERE table_schema = 'public'
+                          AND   table_name = '${table_name}' );`
     const res = await this.pool.query(QUERY_TEXT)
     if (res.rows.length === 0) return false
     return true
