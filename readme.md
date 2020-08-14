@@ -56,7 +56,7 @@ services:
   redis:
     image: redis:6-alpine
     ports:
-      - "6739"
+      - "6379"
 ```
 
 Then, for the environment variables under the DataStore service:
@@ -65,11 +65,17 @@ Then, for the environment variables under the DataStore service:
 environment:
   ...
   REDIS_HOST=redis
-  REDIS_PORT=6739
+  REDIS_PORT=6379
   REDIS_PASS=password
 ```
 
 The value `'redis'` works for the hostname because `docker-compose` automatically associates service names with container networks. See [Docker: Networking in Compose](https://docs.docker.com/compose/networking/) for more details about that.
+
+You can also use the following command to run a temporary Redis instance through docker, replacing the port and password as necessary:
+
+> `docker run -p "6379:6379" redis:6-alpine redis-server --requirepass password`
+
+Here, the variables passed to the DataStore application would be `REDIS_HOST=localhost`, `REDIS_PORT=6379`, and `REDIS_PASS=password`, as above.
 
 ## Data Model
 

@@ -8,6 +8,7 @@ config/data
 test-config
 test-data
 *.csv
+*.local
 
 dist
 tmp

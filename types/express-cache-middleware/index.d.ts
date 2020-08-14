@@ -3,8 +3,8 @@ import { Application, Request, Response, RequestHandler } from 'express'
 
 declare namespace expressCacheMiddleware {
   export interface CacheOptions {
-    getCacheKey: (req: Request) => string;
-    hydrate: (req: Request, res: Response, data: Buffer | string) => Promise<Buffer | string>;
+    getCacheKey?: (req: Request) => string;
+    hydrate?: (req: Request, res: Response, data: Buffer | string) => Promise<Buffer | string>;
   }
 }
 

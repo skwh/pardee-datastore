@@ -134,6 +134,7 @@ async function start_app(db: Database): Promise<void> {
 
     let redis_options: RedisOptions | undefined = undefined
     if (process.env.REDIS_HOST && process.env.REDIS_PORT && process.env.REDIS_PASS) {
+      console.info('Detected caching environment variables.')
       const ttl = process.env.REDIS_TTL ? parseInt(process.env.REDIS_TTL, 10) : 1000
       redis_options = {
         host: process.env.REDIS_HOST,

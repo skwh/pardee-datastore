@@ -34,7 +34,14 @@ export const Server = function(deps: AppDependencies, options: AppOptions) {
         auth_pass: options.redis.auth_pass,
         db: options.redis.db,
         ttl: options.redis.ttl
-      })
+      }),
+      {
+        hydrate: (req, res, data): Promise<string | Buffer> => {
+          // TODO(ederby): properly detect cached content type (could be csv from query)
+          res.contentType('application/json')
+          return Promise.resolve(data)
+        }
+      }
     )
     cacheMiddleware.attach(server)
     console.info('Caching attached.')
