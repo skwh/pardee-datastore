@@ -12,7 +12,7 @@ declare class ExpressCacheMiddleware {
   constructor(cacheManager: Cache,
               options?: expressCacheMiddleware.CacheOptions)
 
-  attach(app: Application): void
+  attach(app: Application, ...callbacks: RequestHandler[]): void
   cacheRoute(req: Request, res: Response, next: RequestHandler): Promise<void>
   cacheGet(key: string): Promise<unknown>
   cacheSet(key: string, value: unknown): Promise<unknown>

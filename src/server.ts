@@ -43,7 +43,7 @@ export const Server = function(deps: AppDependencies, options: AppOptions) {
         }
       }
     )
-    cacheMiddleware.attach(server)
+    cacheMiddleware.attach(server, cors_with_options)
     console.info('Caching attached.')
   }
 
