@@ -38,6 +38,11 @@ export function CategoryRouter(categories: Category[],
                            Object.keys(req.category.series)))
   })
 
+  category_router.get('/:category/dataseries/groups/all', cors_with_options, 
+                                                                 (req, res) => {
+    res.json(categories.map(c => c.series))                                                              
+  })
+
   category_router.param('series', (req, res, next, value) => {
     const found_series = req.category.series[value] === undefined ? Nothing : 
                                               Just(req.category.series[value])
