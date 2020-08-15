@@ -3,6 +3,7 @@ import path from 'path'
 
 import { ApplicationConfig } from '../models/ApplicationData'
 import { Either, Left, Right } from '../lib/Either'
+import { customReplacer } from '../utils'
 
 export class ConfigCache {
 
@@ -26,7 +27,7 @@ export class ConfigCache {
       fs.mkdirSync(this.cachePath)
     }
 
-    const str = JSON.stringify(config)
+    const str = JSON.stringify(config, customReplacer)
     fs.writeFileSync(this.fullPath, str)
   }
 

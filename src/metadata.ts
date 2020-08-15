@@ -59,7 +59,8 @@ function column_values_to_name_maps(vs: string[]): ColumnNameMap[] {
 }
 
 function create_categories_if_exists(groups: Group[]): Maybe<Category[]> {
-  const categories: Record<string, Category> = {}
+  const categories: Record<string, number> = {}
+  const category_list: Category[] = []
   for (const current_group of groups) {
     for (const current_series of current_group.dataseries) {
       if (current_series.category === undefined) {
@@ -67,15 +68,17 @@ function create_categories_if_exists(groups: Group[]): Maybe<Category[]> {
       }
       const category_name = current_series.category
       if (has_prop(categories, category_name)) {
-        categories[category_name].addSeries(current_series)
+        const idx = categories[category_name]
+        category_list[idx].addSeries(current_series)
       } else {
-        categories[category_name] = new Category(category_name)
-        categories[category_name].addSeries(current_series)
+        const cat = new Category(category_name)
+        cat.addSeries(current_series)
+        const nidx = category_list.push(cat) - 1
+        categories[category_name] = nidx
       }
     }
   }
-
-  return Just(Object.values(categories))
+  return Just(category_list)
 }
 
 export class MetadataLoader {
@@ -239,13 +242,16 @@ export class MetadataLoader {
         return Nothing
       }
 
+      let categories: Category[] | undefined = undefined
       const categories_results = create_categories_if_exists(this.fullGroups)
+      if (!isNothing(categories_results)) {
+        categories = categories_results.value
+      }
 
       return Just({
         groups: this.fullGroups,
         shared_column_names: this.shared_column_names,
-        categories: isNothing(categories_results)? undefined : 
-                                                   categories_results.value,
+        categories: categories,
         labels: this.settings.labels
       })
 

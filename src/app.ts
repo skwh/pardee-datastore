@@ -100,12 +100,12 @@ async function start_app(db: Database): Promise<void> {
     const cacheHandler = new ConfigCache(final_cache_path)
 
     if (clear_cache) {
-      console.info('Clearing application config cache.')
+      console.info('Clearing application settings config cache.')
       cacheHandler.clearApplicationConfigCache()
     }
 
     if (cacheHandler.checkCacheFileExists()) {
-      console.info('Loading settings from cache.')
+      console.info('Loading settings from settings cache.')
       const cache_result = cacheHandler.loadApplicationConfigFromCache()
 
       if (isLeft(cache_result)) {
@@ -153,7 +153,7 @@ async function start_app(db: Database): Promise<void> {
       config: applicationConfig,
       redis: redis_options
     }
-
+    
     const app = Server(appDependencies, appOptions)
 
     app.listen(8000, () => console.info(' === Server running ==='))

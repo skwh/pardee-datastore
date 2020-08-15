@@ -143,3 +143,7 @@ export function resEither<T, Q>(res: Response, either: Either<T, Q>, fail_code: 
 export function has_all_props(obj: any, props: string[]): boolean {
   return allOf((k: string) => has_prop(obj, k), props)
 }
+
+export function customReplacer(key: string, value: unknown): unknown {
+  return value instanceof Set ? [...value] : value
+}

@@ -43,6 +43,8 @@ export const Server = function(deps: AppDependencies, options: AppOptions) {
         }
       }
     )
+    // Use forked version of express-cache-middleware for 
+    //  attaching other request handlers before the cache hook
     cacheMiddleware.attach(server, cors_with_options)
     console.info('Caching attached.')
   }
