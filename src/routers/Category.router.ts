@@ -7,6 +7,17 @@ import { make_response, Response_Category } from '../api'
 import { Category } from '../models/Category.model'
 import { RequestHandler } from 'express'
 
+// quick & dirty model for returning total structure of categories
+interface CategoryJsonModel {
+  categories: {
+    name: string;
+    series: {
+      name: string;
+      groups: string[];
+    }[];
+  }[];
+}
+
 export function CategoryRouter(categories: Category[], 
                                dependencies: AppDependencies, 
                                options: AppOptions): RequestHandler {
@@ -16,9 +27,29 @@ export function CategoryRouter(categories: Category[],
 
   const cors_with_options = cors(corsOptions)
 
+  const category_json_model = ((): CategoryJsonModel => {
+    return {
+      categories: categories.map(c => {
+        return {
+          name: c.name.original,
+          series: Object.values(c.series).map(ref => {
+            return {
+              name: ref.name,
+              groups: Array.from(ref.groups.values())
+            }
+          })
+        }
+      })
+    }
+  })()
+
   category_router.get('/values', cors_with_options, (_, res) => {
     res.json(make_response(Response_Category.Categories, 
                            categories.map(c => c.name)))
+  })
+
+  category_router.get('/all', cors_with_options, (_, res) => {
+    res.json(category_json_model)
   })
 
   category_router.param('category', (req, res, next, value) => {
@@ -36,11 +67,6 @@ export function CategoryRouter(categories: Category[],
                                                                  (req, res) => {
     res.json(make_response(Response_Category.Dataseries, 
                            Object.keys(req.category.series)))
-  })
-
-  category_router.get('/:category/dataseries/groups/all', cors_with_options, 
-                                                                 (req, res) => {
-    res.json(categories.map(c => c.series))                                                              
   })
 
   category_router.param('series', (req, res, next, value) => {

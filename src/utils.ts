@@ -80,7 +80,8 @@ export function remove_duplicates<T>(xs: T[]): T[] {
   return [...array_set]
 }
 
-export function find_missing_params(a: any, props: string[]): Record<string, boolean> {
+export function find_missing_params(a: any, props: string[]): 
+                                                      Record<string, boolean> {
   const vals: Record<string, boolean> = {}
   props.forEach((v) => {
     if (!has_prop(a, v)) {
@@ -132,7 +133,9 @@ export function resMaybe<T>(res: Response, maybe: Maybe<T>): void {
   res.json(maybe.value)
 }
 
-export function resEither<T, Q>(res: Response, either: Either<T, Q>, fail_code: number): void {
+export function resEither<T, Q>(res: Response, 
+                                either: Either<T, Q>, 
+                                fail_code: number): void {
   if (isLeft(either)) {
     res.sendStatus(fail_code)
     return

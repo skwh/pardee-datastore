@@ -16,6 +16,14 @@ import { SqlQueryTransformer } from '../db/Query.to.Sql'
 import { ColumnNameMap } from '../models/ColumnNameMap.model'
 import { UnsafeQuery } from '../models/unsafe/Unsafe.model'
 
+// quick & dirty json model for all groups information
+interface GroupsJsonModel {
+  groups: {
+    name: string;
+    dataseries: string[];
+  }[];
+}
+
 function find_object_in_label_list(labelType: Column_Label_Values, 
                                    list: LabelList, alias: string): 
                                    Maybe<ColumnNameMap> {
@@ -29,6 +37,17 @@ export function GroupsRouter(dependencies: AppDependencies,
   const cors_with_options = cors(corsOptions)
 
   const groups_router = Router()
+
+  const groups_json_model = ((): GroupsJsonModel => {
+    return {
+      groups: config.groups.map(group => {
+        return {
+          name: group.name,
+          dataseries: group.dataseries.map(series => series.name)
+        }
+      })
+    }
+  })()
 
   const download_key_map: {
     [key: string]: {
@@ -77,6 +96,10 @@ export function GroupsRouter(dependencies: AppDependencies,
   groups_router.get('/values', cors_with_options, (req, res) => {
     res.json(make_response(Response_Category.Groups,
                            options.config.groups.map(g => g.name)))
+  })
+
+  groups_router.get('/all', cors_with_options, (req, res) => {
+    res.json(groups_json_model)
   })
 
   groups_router.param('group', (req, res, next, value) => {

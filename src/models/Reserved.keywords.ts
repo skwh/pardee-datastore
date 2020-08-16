@@ -1,3 +1,4 @@
 export enum SETTINGS_RESERVED_KEYWORDS {
-  VALUES = 'values'
+  VALUES = 'values',
+  ALL = 'all'
 }

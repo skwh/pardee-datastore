@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import express, { Request, Response, RequestHandler } from 'express'
 import compression from 'compression'
 import ExpressCache from 'express-cache-middleware'
@@ -81,7 +82,6 @@ export const Server = function(deps: AppDependencies, options: AppOptions) {
     res.sendStatus(404)
   })
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   server.use((err: any, 
               _req: Request, 
               res: Response, 

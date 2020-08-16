@@ -96,6 +96,16 @@ Any given table (in a csv file) can have different types of columns:
 
 The program then generates endpoints which allow for an end user or another application to determine the shape of the data and query against it. Querying is discussed in more detail below. 
 
+The dataseries can be organized into a structure to provide some degree of classification and to recognize natural groupings of measurements or data sets. The DataStore provides two ways of classifying data: `groups` and `categories`.
+
+In the settings file, discussed below, all dataseries must belong to a `group`. Every dataseries in a `group` shares the same `key` values (and `cokey`, if applicable). This way you can query multiple data series with the same `key` values. If none of your data series share `key` values, that's okay, you can put them all in separate groups. Just make the group names the same as the series names, and you'll have to pass it twice to the api (see below, "The Generated API Outline").
+
+All dataseries may also belong to a `category`. If any dataseries does not belong to a category, no categories will be considered. If categories are avaliable, the application will store which groups the dataseries belong to as a child of their entry in the list of categories. 
+
+There are some reserved keywords, after which `groups` and `categories` cannot be named. These are:
+* `values`
+* `all`
+
 ## Settings.yml
 
 The `settings.yml` file is a way for an administrator to provide details to the application about the data being input. This file is required for proper functioning of the application. There are several different sections which can be used to configure the application and specify what data should be loaded.
@@ -236,12 +246,15 @@ There are two categories of endpoints: endpoints to determine what columns are a
 
 The shape endpoints are as follows:
 - `GET /keys`: Returns all column names labeled "key"
-- `GET /group/:group/key/:key/values`: Returns all the values in the column labeled `:key` (url parameter variable)
-- `GET /group/:group/cokey/:cokey/values`: Returns all the cokey values in the column labeled `:key` (dyadic series only)
+- `GET /groups/all`: Returns a JSON representation of the group structure. See below for the structure.
+- `GET /groups/values`: Returns all the names of the groups.
+- `GET /groups/:group/key/:key/values`: Returns all the values in the column labeled `:key` (url parameter variable)
+- `GET /groups/:group/cokey/:cokey/values`: Returns all the cokey values in the column labeled `:key` (dyadic series only)
 - `GET /range/values`: Returns all the columns labeled "range"
 - `GET /special/values`: Returns all the columns labeled "special"
-- `GET /group/:group/dataseries/:series/info`: Returns metadata about the dataseries, provided by the administrator
+- `GET /groups/:group/dataseries/:series/info`: Returns metadata about the dataseries, provided by the administrator
 - `GET /groups/:group/dataseries/values`: Returns the names of all avaliable data series, as specified in the `settings.yml` file. 
+- `GET /categories/all`: Returns a JSON representation of the category structure. See below for the structure.
 - `GET /categories/values`: Returns the different categories which data is sorted into
 - `GET /categories/:category/dataseries`: Returns the dataseries which belong to a given category
 
@@ -259,6 +272,33 @@ So the response pattern is as follows:
 ```
 
 Where `shape_category` is one of `range`, `special`, `key`, `cokey`, `anchor`, `datasets`, `groups`, or `values`. The "original" represents how the column was named, as specified by the administrator. The "alias" is the machine-readable version of the column name. If the name was not altered, then the two fields are the same.
+
+### All Endpoints
+
+The groups router and the categories router both have endpoints which return a JSON representation of the structure of the data. This is to enable few-request transactions with the server so that client applications can show a rough structure of the data to a client without having to perform separate queries for each group or each category.
+
+The structure of the response for each endpoint is as follows:
+
+#### Groups `/all` Response
+
+```Javascript
+groups: {
+  name: string;
+  dataseries: string[];
+}[];
+```
+
+#### Categories `/all` Response
+
+```Javascript
+categories: {
+  name: string;
+  series: {
+    name: string;
+    groups: string[];
+  }[];
+}[];
+```
 
 ### Query Endpoints
 
@@ -443,3 +483,8 @@ running."
 
 The DataStore will then log any HTTP requests it recieves, including the IP of
 the request, a response code, and the request path. 
+
+# Planned or wishlist features
+
+* GraphQL endpoint (would probably require significant restructuring of the data model in order to properly work alongside the `type-graphql` package)
+* enable uncategorized dataseries via a category called "uncategorized"
