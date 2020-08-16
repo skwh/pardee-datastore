@@ -11,7 +11,7 @@ import { RequestHandler } from 'express'
 interface CategoryJsonModel {
   categories: {
     name: string;
-    series: {
+    dataseries: {
       name: string;
       groups: string[];
     }[];
@@ -32,7 +32,7 @@ export function CategoryRouter(categories: Category[],
       categories: categories.map(c => {
         return {
           name: c.name.original,
-          series: Object.values(c.series).map(ref => {
+          dataseries: Object.values(c.series).map(ref => {
             return {
               name: ref.name,
               groups: Array.from(ref.groups.values())

@@ -293,7 +293,7 @@ groups: {
 ```Javascript
 categories: {
   name: string;
-  series: {
+  dataseries: {
     name: string;
     groups: string[];
   }[];
