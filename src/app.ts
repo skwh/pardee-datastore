@@ -27,6 +27,7 @@ const only_clear = process.env.ONLY_CLEAR ? true : false
 const no_serve = process.env.NO_SERVE ? true : false
 const strict = process.env.STRICT_LOAD ? true : false
 const clear_cache = process.env.CLEAR_CACHE ? true : false
+const history_mode = process.env.HISTORY_MODE ? true : false
 
 const corsOptions: CorsOptions = {
   'origin': cors_origin,
@@ -148,6 +149,7 @@ async function start_app(db: Database): Promise<void> {
     const appOptions: AppOptions = {
       database: db,
       corsOptions: corsOptions,
+      history_mode: history_mode,
       serve_static_path: static_path,
       httpLogger: httpLogger,
       config: applicationConfig,

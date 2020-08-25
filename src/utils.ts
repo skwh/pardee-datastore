@@ -1,5 +1,6 @@
 import yaml from 'js-yaml'
 import fs from 'fs'
+import { join } from 'path'
 import csv from 'csv-parser'
 
 import { Maybe, Just, Nothing, isNothing } from './lib/Maybe'
@@ -149,4 +150,47 @@ export function has_all_props(obj: any, props: string[]): boolean {
 
 export function customReplacer(key: string, value: unknown): unknown {
   return value instanceof Set ? [...value] : value
+}
+
+function has_extension(path: string): boolean {
+  return path.includes('.')
+}
+
+export function readdirSyncRecursive(base: string, path: string): string[] {
+  const contents = fs.readdirSync(path)
+  return contents.flatMap(c => {
+    const full_path = join(path, c)
+    const display_path = join(base, c)
+    if (!has_extension(c)) return readdirSyncRecursive(display_path, full_path)
+    return display_path
+  })
+}
+
+/**
+ * Splits an array of items in two based on if they satisfy the predicate or not.
+ * If the item does satisfy the predicate, it goes in the list on the 
+ * left hand side of the tuple, else right hand side. 
+ * @param as Items to be split
+ * @param predicate Function by which to split them
+ */
+export function splitBy<A>(as: A[], predicate: (a: A) => boolean): [A[], A[]] {
+  const m: A[] = [], n: A[] = []
+  for (let i = 0; i < as.length; i++) {
+    if (predicate(as[i])) {
+      m.push(as[i])
+    } else {
+      n.push(as[i])
+    }
+  }
+  return [m, n]
+}
+
+/**
+ * Performs func on each item of both sides of a tuple of lists
+ * @param tuple tuple of lists
+ * @param func function for map
+ */
+export function tupleMap<A,B>(tuple: [A[], A[]], func: (a: A) => B): [B[], B[]] {
+  const [a, b] = tuple
+  return [ a.map(func), b.map(func) ]
 }

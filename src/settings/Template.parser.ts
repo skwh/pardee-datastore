@@ -19,16 +19,16 @@ function unsafeIsSafe(template: Partial<Template>): template is Template {
       && template.dataseries !== undefined
 }
 
-function csv_columns_match_given(csv: Record<string, string>[], 
+function csv_columns_match_given(csv: CSV, 
                                  columns: string[]): 
-                                 boolean {
+                                 Either<ParseError, boolean> {
   const csv_headers = Object.keys(csv[0])
   for (const name of columns) {
     if (!csv_headers.includes(name)) {
-      return false
+      return Left(new ParseError(`A header was specified in the settings which does not appear in the csv! Header: ${name} Searched: ${csv_headers}`))
     }
   }
-  return true
+  return Right(true)
 }
 
 /**
@@ -130,10 +130,9 @@ export async function TemplateParser(template: Partial<Template>,
         `Template file ${template.path} is empty or malformatted.`))
   }
 
-  if (!csv_columns_match_given(template_values, template.columns)) {
-    return Left(
-      new ParseError(
-        `Columns in template section do not match columns in template file.`))
+  const test_columns_match = csv_columns_match_given(template_values, template.columns)
+  if (isLeft(test_columns_match)) {
+    return test_columns_match
   }
 
   const unsafe_series: UnsafeSeries[] = []

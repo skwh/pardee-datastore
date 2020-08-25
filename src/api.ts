@@ -25,6 +25,13 @@ export function make_response(category: Response_Category,
                               values: any): 
                               Response {
   const res: Response = {}
+
+  if (values instanceof Array && values.length === 0) {
+    res[category] = []
+    
+    return res
+  }
+
   // Typescript function overloading: test type of element in values
   if (typeof values[0] === 'string') {
     res[category] = values.map((v: string) => {

@@ -252,7 +252,8 @@ export class MetadataLoader {
         groups: this.fullGroups,
         shared_column_names: this.shared_column_names,
         categories: categories,
-        labels: this.settings.labels
+        labels: this.settings.labels,
+        dataseries: this.settings.dataseries
       })
 
     } catch (error) {

@@ -22,6 +22,8 @@ The application also has the following environment variables avaliable:
 - `ONLY_CLEAR`: with this flag set, the application only attempts to clear existing tables and table indexes, then quits. 
 - `NO_SERVE`: the application loads data to the database, outputs its application config object, and quits, without starting a web server. 
 - `CLEAR_CACHE`: the application clears its settings cache before attempting to load settings.
+- `HISTORY_MODE`: the application redirects 404s to the index. This is necessary
+  when using "history mode" in a SPA, discussed below ("Serving Static Assets")
 
 The application is designed to be run alongside a Postgres database. Provide the application the parameters for the database with the following environment variables:
 - `PGUSER`
@@ -287,6 +289,7 @@ groups: {
   dataseries: string[];
 }[];
 ```
+This endpoint is `/groups/all`.
 
 #### Categories `/all` Response
 
@@ -299,6 +302,14 @@ categories: {
   }[];
 }[];
 ```
+This endpoint is `/categories/all`.
+
+### Monad / Dyad Endpoints
+
+The application also provides endpoints which allow a user to examine all of the dataseries in the DataStore by whether they are monadic or dyadic. These endpoints are:
+
+- `/dataseries/monadic`
+- `/dataseries/dyadic`
 
 ### Query Endpoints
 
@@ -307,6 +318,8 @@ Query endpoints are used to examine the data itself.
 - `POST /groups/:group/dataseries/:series/query`: Perform a query against the data series called `:series` (url parameter variable). See the next section for how to perform a query.
 
 In order to recieve CSV or JSON formatting, you must send the correct `Accepts` header with your request. For csv, use the MIME type `text/csv`. JSON is the default, but can be specified with the MIME type "application/json". If you use a web browser with any of these query endpoints, you are likely to recieve the CSV format, since most web browsers use the `Accepts: text/*` header. 
+
+When a query is sent to the POST endpoint, the response from the server is not the data itself, but rather a redirect to a URL with a token for this specific request. Access the data you queried for by retrieving the information at the url in the response. 
 
 ### The Query Format
 
@@ -454,6 +467,12 @@ volumes:
     source: ./dist/
     target: /var/www/view/dist
 ```
+
+It may be necessary to set the `HISTORY_MODE` flag when serving static assets.
+Most modern SPA frameworks have a history mode for their router, but this mode
+requires special configuration on the server side. If you are using history mode
+in your router, set the `HISTORY_MODE` flag so that otherwise unrecognized URLS
+will automatically fall back to the index. 
 
 ## Starting Up the DataStore
 

@@ -236,11 +236,13 @@ export function GroupsRouter(dependencies: AppDependencies,
                     (req, res) => {
     const { id } = req.query
     const download_key = make_download_key(req.group, req.series)
-    if (!id || !has_prop(download_key_map[download_key], id)) {
+    if (!id || typeof id !== 'string' 
+            || !has_prop(download_key_map[download_key], id)) {
       res.sendStatus(404)
       return
     }
-    const { filename, data, download } = download_key_map[download_key][id]
+    const nId = parseInt(id, 10)
+    const { filename, data, download } = download_key_map[download_key][nId]
 
     res.format({
       'text/csv': async () => {
@@ -261,7 +263,7 @@ export function GroupsRouter(dependencies: AppDependencies,
       }
     })
 
-    delete download_key_map[download_key][id]
+    delete download_key_map[download_key][nId]
   })
 
   groups_router.options('/:group/dataseries/:series/query', cors_with_options)
@@ -271,6 +273,7 @@ export function GroupsRouter(dependencies: AppDependencies,
                      express.json(), 
                      async (req, res) => {
     const { download } = req.query
+    const shouldDownload = download === 'string'
     const series_table_name = req.series.table_name
 
     const parsed_query = QueryParser(req.body as UnsafeQuery, 
@@ -292,7 +295,7 @@ export function GroupsRouter(dependencies: AppDependencies,
                                        req.series, 
                                        rows, 
                                        filename, 
-                                       download)
+                                       shouldDownload)
 
     const constructed_url = req.baseUrl + req.path + `/result?id=${id}`
 

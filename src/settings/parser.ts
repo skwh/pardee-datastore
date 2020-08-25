@@ -10,7 +10,7 @@ import { LabelParser } from './Labels.parser'
 import { ParsedGroup, ParsedSettingsData } from '../models/parsed/Parsed.model'
 import { UnsafeColumn, UnsafeGroup } from '../models/unsafe/Unsafe.model'
 import { Template } from '../models/template/Template.model'
-import { has_prop } from '../utils'
+import { has_prop, splitBy, tupleMap } from '../utils'
 
 /**
  * The different sections that may be present in a settings yml file.
@@ -62,9 +62,19 @@ export async function SettingsParser(yaml: unknown,
     return groups_result
   }
 
+  const [monadic_series_names, dyadic_series_names] = tupleMap(
+                                splitBy(
+                                  groups_result.value.flatMap(g => g.dataseries)
+                                , s => s.type === 'monadic'),
+                                s => s.name)
+
   return Right({
     columns: columns_result.value,
     groups: groups_result.value,
-    labels: labels_result.value
+    labels: labels_result.value,
+    dataseries: {
+      monadic: monadic_series_names,
+      dyadic: dyadic_series_names
+    }
   })
 }

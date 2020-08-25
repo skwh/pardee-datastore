@@ -11,6 +11,10 @@ export interface ApplicationConfig {
   labels: LabelList;
   shared_column_names: string[];
   categories?: Category[];
+  dataseries: {
+    monadic: string[];
+    dyadic: string[];
+  };
 }
 
 export interface RedisOptions {
@@ -33,6 +37,7 @@ export interface AppDependencies {
 export interface AppOptions {
   database: Database;
   serve_static_path?: string;
+  history_mode?: boolean;
   httpLogger: RequestHandler;
   corsOptions: CorsOptions;
   config: ApplicationConfig;

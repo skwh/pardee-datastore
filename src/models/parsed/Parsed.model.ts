@@ -21,4 +21,8 @@ export interface ParsedSettingsData {
   groups: ParsedGroup[];
   columns: ParsedColumn[];
   labels: LabelList;
+  dataseries: {
+    monadic: string[];
+    dyadic: string[];
+  };
 }
