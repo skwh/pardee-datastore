@@ -4,6 +4,41 @@ This application is designed to take structured data in the form of csv files, a
 
 In this document, a "user" is someone who visits the application in its final state. An "administrator" is the person setting up the application.
 
+<!-- toc -->
+
+  * [Running the DataStore](#running-the-datastore)
+    + [Server-Assisted Client Side Caching with Redis](#server-assisted-client-side-caching-with-redis)
+  * [Data Model](#data-model)
+  * [Settings.yml](#settingsyml)
+    + [Groups Format](#groups-format)
+      - [Examples:](#examples)
+    + [Columns Format](#columns-format)
+      - [Examples:](#examples-1)
+      - [The `many` format](#the-many-format)
+    + [Template format](#template-format)
+      - [An example:](#an-example)
+    + [Categories](#categories)
+    + [Full Example](#full-example)
+  * [The Generated API Outline](#the-generated-api-outline)
+    + [Shape Endpoints](#shape-endpoints)
+      - [Response](#response)
+    + [All Endpoints](#all-endpoints)
+      - [Groups `/all` Response](#groups-all-response)
+      - [Categories `/all` Response](#categories-all-response)
+    + [Monad / Dyad Endpoints](#monad--dyad-endpoints)
+    + [Query Endpoints](#query-endpoints)
+    + [The Query Format](#the-query-format)
+      - [Domain](#domain)
+      - [Dyad](#dyad)
+      - [Range](#range)
+      - [Special](#special)
+  * [Serving Static Assets](#serving-static-assets)
+  * [Starting Up the DataStore](#starting-up-the-datastore)
+    + [Operational Output](#operational-output)
+- [Planned or wishlist features](#planned-or-wishlist-features)
+
+<!-- tocstop -->
+
 ## Running the DataStore
 
 The application requires certain files to be in certain places to run:
@@ -85,7 +120,7 @@ The application takes in data from csv files. In order to make this data useful 
 
 The application supports both monadic and dyadic datasets. Briefly, a monadic dataset is one where a measurement is taken against one unique identifier. For example, in a dataset of people's ages, each age is tied to a unique identifer, namely a person. In the dataset this would be their name.
 
-A dyadic dataset is one where each measurement is taken against two unique identifiers as a pair. In some datasets the order of the pair matters.
+A dyadic dataset is one where each measurement is taken against two unique identifiers as a pair. In some datasets the order of the pair matters, sometimes called "directed dyads."
 
 In order to support both kinds of datasets, the administrator must classify the different columns for the application. 
 
@@ -319,7 +354,13 @@ Query endpoints are used to examine the data itself.
 
 In order to recieve CSV or JSON formatting, you must send the correct `Accepts` header with your request. For csv, use the MIME type `text/csv`. JSON is the default, but can be specified with the MIME type "application/json". If you use a web browser with any of these query endpoints, you are likely to recieve the CSV format, since most web browsers use the `Accepts: text/*` header. 
 
-When a query is sent to the POST endpoint, the response from the server is not the data itself, but rather a redirect to a URL with a token for this specific request. Access the data you queried for by retrieving the information at the url in the response. 
+When a query is sent to the POST endpoint, the response from the server is not the data itself, but rather a redirect to a URL with a token for this specific request. Access the data you queried for by retrieving the information at the url in the response. For example:
+
+`POST /groups/church-group/dataseries/churchgroup-by/query` -> `200 OK:
+/groups/church-group/dataseries/churchgroup-by/query?result=6234912`
+
+The data will then be available using this result token. Once the data is
+accessed, the token becomes invalid.
 
 ### The Query Format
 

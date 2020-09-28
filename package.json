@@ -12,7 +12,8 @@
     "start": "npm run build && npm run serve",
     "test": "nyc mocha src/test/*.spec.ts src/test/**/*.spec.ts",
     "lint": "eslint src --ext .ts --fix",
-    "lint:quiet": "eslint src --ext .ts --fix --quiet"
+    "lint:quiet": "eslint src --ext .ts --fix --quiet",
+    "readme": "markdown-toc -i readme.md"
   },
   "author": "Evan Derby <somekidwithhtml@gmail.com>",
   "repository": "https://github.com/skwh/pardee-datastore",
@@ -48,6 +49,7 @@
     "@typescript-eslint/parser": "^2.25.0",
     "chai": "^4.2.0",
     "eslint": "^6.8.0",
+    "markdown-toc": "^1.2.0",
     "mocha": "^7.1.1",
     "nyc": "^15.0.0",
     "source-map-support": "^0.5.16",
