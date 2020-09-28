@@ -4,6 +4,8 @@ This application is designed to take structured data in the form of csv files, a
 
 In this document, a "user" is someone who visits the application in its final state. An "administrator" is the person setting up the application.
 
+**Table of Contents:**
+
 <!-- toc -->
 
   * [Running the DataStore](#running-the-datastore)
@@ -11,12 +13,12 @@ In this document, a "user" is someone who visits the application in its final st
   * [Data Model](#data-model)
   * [Settings.yml](#settingsyml)
     + [Groups Format](#groups-format)
-      - [Examples:](#examples)
+      - [Examples](#examples)
     + [Columns Format](#columns-format)
-      - [Examples:](#examples-1)
+      - [Examples](#examples-1)
       - [The `many` format](#the-many-format)
     + [Template format](#template-format)
-      - [An example:](#an-example)
+      - [Example](#example)
     + [Categories](#categories)
     + [Full Example](#full-example)
   * [The Generated API Outline](#the-generated-api-outline)
@@ -168,7 +170,7 @@ Each dataseries object **may** have the following attributes:
 - `slug`: A machine-friendly way of referring to the data series. If not provided, this is generated from the data series' name. 
 - `metadata`: Any other information about the dataseries that you might want to expose over the HTTP API via `/info` (see "Generated API Outline" below).
 
-#### Examples:
+#### Examples
 ```YML
 group:
   name: Church Group
@@ -199,7 +201,7 @@ Each column object must have the following attributes:
 Each column object may have the following attributes:
 - `modifier`: A flag that the program should parse this column differently. Possible values currently only include `many`.
 
-#### Examples:
+#### Examples
 ```YML
 columns:
 - name: FirstName
@@ -244,7 +246,7 @@ The `template` section requires a `path` be provided to this secondary csv file.
 
 The last required aspect of the `template` section is a `dataseries` entry, where each value may use a column name as a variable in "handlebars" syntax. If the name of a column is "Variable", then the handlebars syntax would be "{Variable}". This tells the application what to replace with the corresponding value in the secondary file table. Each handlebars entry in the `dataseries` object must be surrounded with double quotes ("). These entries can contain a mix of handlebars variables and hardcoded text, as in the `location` field in the example below. 
 
-#### An example:
+#### Example
 
 ```YAML
 template:
