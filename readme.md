@@ -341,6 +341,23 @@ categories: {
 ```
 This endpoint is `/categories/all`.
 
+#### All Info Endpoints
+
+The groups router will also expose all metadata about every dataseries in every group via the endpoint `/all/info`. The format is as follows:
+
+```Javascript
+groups: {
+  name: string;
+  dataseries: {
+    name: string,
+    category?: string;
+    group: string;
+    type: string;
+    metadata: object
+  }[]
+}
+```
+
 ### Monad / Dyad Endpoints
 
 The application also provides endpoints which allow a user to examine all of the dataseries in the DataStore by whether they are monadic or dyadic. These endpoints are:

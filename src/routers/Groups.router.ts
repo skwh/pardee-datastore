@@ -24,6 +24,31 @@ interface GroupsJsonModel {
   }[];
 }
 
+interface SeriesInfoResponse {
+  name: string;
+  category?: string;
+  group: string;
+  type: string;
+  metadata: unknown;
+}
+
+interface GroupsAllInfoResponse {
+  groups: {
+    name: string;
+    dataseries: SeriesInfoResponse[];
+  }[];
+}
+
+function MakeSeriesInfoResponse(series: Series): SeriesInfoResponse {
+  return {
+    name: series.name,
+    category: series.category,
+    group: series.group,
+    type: series.type,
+    metadata: series.metadata
+  }
+}
+
 function find_object_in_label_list(labelType: Column_Label_Values, 
                                    list: LabelList, alias: string): 
                                    Maybe<ColumnNameMap> {
@@ -44,6 +69,17 @@ export function GroupsRouter(dependencies: AppDependencies,
         return {
           name: group.name,
           dataseries: group.dataseries.map(series => series.name)
+        }
+      })
+    }
+  })()
+
+  const groups_all_info = ((): GroupsAllInfoResponse => {
+    return {
+      groups: config.groups.map(group => {
+        return {
+          name: group.name,
+          dataseries: group.dataseries.map(MakeSeriesInfoResponse)
         }
       })
     }
@@ -100,6 +136,10 @@ export function GroupsRouter(dependencies: AppDependencies,
 
   groups_router.get('/all', cors_with_options, (req, res) => {
     res.json(groups_json_model)
+  })
+
+  groups_router.get('/all/info', cors_with_options, (req, res) => {
+    res.json(groups_all_info)
   })
 
   groups_router.param('group', (req, res, next, value) => {
@@ -222,13 +262,7 @@ export function GroupsRouter(dependencies: AppDependencies,
   groups_router.get('/:group/dataseries/:series/info', 
                     cors_with_options, 
                     (req, res) => {
-    res.json({
-      name: req.series.name,
-      category: req.series.category,
-      group: req.series.group,
-      type: req.series.type,
-      metadata: req.series.metadata
-    })
+    res.json(MakeSeriesInfoResponse(req.series))
   })
 
   groups_router.get('/:group/dataseries/:series/query/result', 
@@ -286,8 +320,6 @@ export function GroupsRouter(dependencies: AppDependencies,
     }
 
     const QUERY = SqlQueryTransformer(parsed_query.value, series_table_name)
-    
-    console.debug('performing query: ', QUERY)
 
     const { rows } = await database.query(QUERY)
     const filename = series_table_name
